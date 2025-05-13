@@ -1,2 +1,5 @@
 android-tools
 git
+python
+ranger
+jq

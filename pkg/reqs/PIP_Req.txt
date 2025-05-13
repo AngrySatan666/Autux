@@ -1,12 +1,1 @@
-# Flask #
-flask
-flask-auth
-flask-wtf
-
-# Core #
-requests
-pillow
-pytesseract
-
-# Time #
 datetime

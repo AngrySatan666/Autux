@@ -1,0 +1,21 @@
+{
+    "repos.set": true, //termux-change-repo set
+    "storage.enabled": true, //termux-setup-storage set
+    "script.folders": {
+        "bashFolder": "${FBash}", //You can select a folder here just be sure to have it set like "${HOME/storage/yourcustompath}"
+        "pyFolder": "${FPy}" //Same as above, "${HOME/storage/yourcustompath}"
+    },
+    "VenV": [
+        {
+            "main" : {
+                "loc": "${VENV}", //DON'T CHANGE THIS HERE!!!
+                "pipDepend": [ //This get updated by pip freeze, this will not make the env install a library
+                    "datetime"
+                ],
+                "pkgDepend": [ //This gets updated by pkg list-installed, this will not make termux install the pkg 
+                    "android-tools", "git", "python", "ranger"
+                ]
+            }
+        }
+    ]
+}
