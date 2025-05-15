@@ -1,0 +1,10 @@
+{
+    "Defaults": [
+        {"terminal": "/data/data/com.termux/files/home/storage/shared/Documents/scripts/bash"},
+        {"venv": "/data/data/com.termux/files/home/storage/shared/Documents/scripts/py"}
+    ],
+    "VenV": [
+        { "pip.Depend": ["datetime", "requests"]},
+        { "pkg.Depend": ["android-tools", "git", "python", "ranger"]}
+    ]
+}

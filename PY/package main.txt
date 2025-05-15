@@ -1,0 +1,70 @@
+package main
+
+import (
+    "encoding/json"
+    "flag"
+    "fmt"
+    "os"
+    "os/exec"
+)
+
+type Settings struct {
+    ADBPath string `json:"adb_path"`
+}
+
+func main() {
+    // Parse CLI flags
+    start := flag.Bool("start", false, "Start the ADB server")
+    tap := flag.String("tap", "", "Tap on the screen at X,Y (e.g., --tap 100,200)")
+    screenshot := flag.String("screenshot", "", "Take a screenshot and save to a file (e.g., --screenshot file.png)")
+    openApp := flag.String("open_app", "", "Open an app by its package name")
+    flag.Parse()
+
+    // Load settings
+    settings := loadSettings()
+
+    // Handle commands
+    if *start {
+        runCommand(settings.ADBPath, "start-server")
+    } else if *tap != "" {
+        coords := *tap
+        runCommand(settings.ADBPath, "shell", "input", "tap", coords)
+    } else if *screenshot != "" {
+        file := *screenshot
+        runCommand(settings.ADBPath, "shell", "screencap", "-p", file)
+    } else if *openApp != "" {
+        packageName := *openApp
+        runCommand(settings.ADBPath, "shell", "monkey", "-p", packageName, "-c", "android.intent.category.LAUNCHER", "1")
+    } else {
+        fmt.Println("Usage:")
+        fmt.Println("  --start")
+        fmt.Println("  --tap X,Y")
+        fmt.Println("  --screenshot file.png")
+        fmt.Println("  --open_app package_name")
+    }
+}
+
+func loadSettings() Settings {
+    file, err := os.Open("settings.json")
+    if err != nil {
+        fmt.Println("Error: Could not open settings.json")
+        os.Exit(1)
+    }
+    defer file.Close()
+
+    var settings Settings
+    if err := json.NewDecoder(file).Decode(&settings); err != nil {
+        fmt.Println("Error: Could not parse settings.json")
+        os.Exit(1)
+    }
+    return settings
+}
+
+func runCommand(name string, args ...string) {
+    cmd := exec.Command(name, args...)
+    cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+    if err := cmd.Run(); err != nil {
+        fmt.Printf("Error: %v\n", err)
+    }
+}

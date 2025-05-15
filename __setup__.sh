@@ -159,6 +159,8 @@ Repo () {
             Error "Storage Acess not set Properly! Exiting"
             Timer 5
             Exit
+        fi
+    fi
     Input "Automatically create script folders on storage drive? (y/n)"
     if [[ "${answer1,,}" =~ ^n ]]; then
         Input "Do you have a bash script folder location to add? If so type the location here, else press enter to skip"
@@ -216,7 +218,7 @@ Repo () {
     fi
     Info "Created '$HOME/.local/bin' & '$VENV/local/bin' " "Creating autux settings.json"
     mkdir -p "$HOME/.config/autux"
-    cp "$SCR_DIR/bash/settings.json" "$HOME/.config/autux/settings.json"
+    cp "$SCR_DIR/settings.json" "$HOME/.config/autux/settings.json"
     sed "s|\${VENV}|$VENV|g; s|\${FBash}|$FBash|g; s|\${FPy}|$FPy|g" "$HOME/.config/autux/settings.json" > "$HOME/.config/autux/settings.tmp" && mv "$HOME/.config/autux/settings.tmp" "$HOME/.config/autux/settings.json"
 }
 
