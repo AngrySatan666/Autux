@@ -27,7 +27,7 @@ class Autux:
         """Start adb server and shell, and rebuild app map."""
         subprocess.run(["adb", "start-server"])
         self.build_app_map()
-        return self  # <-- Add this line
+        return self
 
     def tap(self, x, y):
         """Simulate a tap at (x, y) on the device."""

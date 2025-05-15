@@ -102,30 +102,9 @@ End () {
     clear
 }
 
-DIR () {
-    at=$(pwd)
-    if [ "$at" != "$1" ]; then
-        if [ -d "$1" ]; then
-            cd "$1" || Error "Failed to change directory to '$1'."
-        else
-            Error "Directory '$1' does not exist."
-        fi
-    fi
-}
-
 PAK () {
     local pat="$SCR_DIR/reqs"
     case "$1" in
-        "deb")
-            Info "Installing Debian packages from DEB_Req.txt..."
-            if [[ -f "$pat/DEB_Req.txt" ]]; then
-                grep -vE '^\s*#|^\s*$' "$pat/DEB_Req.txt" | sed 's/[[:space:]]*$//' | xargs -r apt install -y
-                apt update && apt upgrade -y
-                Info "Debian packages installed successfully."
-            else
-                Error "DEB_Req.txt not found in $pat."
-            fi
-            ;;
         "tmx")
             Info "Installing Termux packages from TMX_Req.txt..."
             if [[ -f "$pat/TMX_Req.txt" ]]; then
@@ -134,16 +113,6 @@ PAK () {
                 Info "Termux packages installed successfully."
             else
                 Error "TMX_Req.txt not found in $pat."
-            fi
-            ;;
-        "ubu")
-            Info "Installing Ubuntu packages from UBU_Req.txt..."
-            if [[ -f "$pat/UBU_Req.txt" ]]; then
-                grep -vE '^\s*#|^\s*$' "$pat/UBU_Req.txt" | sed 's/[[:space:]]*$//' | xargs -r apt install -y
-                apt update && apt upgrade -y
-                Info "Ubuntu packages installed successfully."
-            else
-                Error "UBU_Req.txt not found in $pat."
             fi
             ;;
         "pip")
@@ -163,7 +132,7 @@ PAK () {
 # <!-- Configure Termux ----->
 Repo () {
     cd $HOME
-    if pkg list-installed | grep -qe 'x11-repo|science-repo|game-repo'; then
+    if pkg list-installed | grep -qe 'x11-repo||science-repo||game-repo'; then
         Info "Repositories already configured"
     else 
         Warn "Repositories not selected, installing repo pkgs"
@@ -190,55 +159,54 @@ Repo () {
             Error "Storage Acess not set Properly! Exiting"
             Timer 5
             Exit
-        Input "Automatically create script folders on storage drive? (y/n)"
-        if [[ "${answer1,,}" =~ ^n ]]; then
-            Input "Do you have a bash script folder location to add? If so type the location here, else press enter to skip"
-            if [[ -z "${answer1// }" ]] || [[ "${answer1,,}" =~ ^n ]] ; then
-                Warn "No bash script folder will be added, you can add this later in .config/autux/settings.json"
-                FBash=' '
+    Input "Automatically create script folders on storage drive? (y/n)"
+    if [[ "${answer1,,}" =~ ^n ]]; then
+        Input "Do you have a bash script folder location to add? If so type the location here, else press enter to skip"
+        if [[ -z "${answer1// }" ]] || [[ "${answer1,,}" =~ ^n ]] ; then
+            Warn "No bash script folder will be added, you can add this later in .config/autux/settings.json"
+            FBash=' '
+        else
+            if [ -d "$HOME/storage/$answer1" ]; then
+                FBash="$HOME/storage/$answer1"
             else
-                if [ -d "$HOME/storage/$answer1" ]; then
+                Warn "The folder '$answer1' does not exist."
+                Input "Would you like to create this folder? (y/n)"
+                if [[ "${answer1,,}" =~ ^y ]]; then
+                    mkdir -p "$HOME/storage/$answer1"
+                    Info "Folder created at: $answer1"
                     FBash="$HOME/storage/$answer1"
                 else
-                    Warn "The folder '$answer1' does not exist."
-                    Input "Would you like to create this folder? (y/n)"
-                    if [[ "${answer1,,}" =~ ^y ]]; then
-                        mkdir -p "$HOME/storage/$answer1"
-                        Info "Folder created at: $answer1"
-                        FBash="$HOME/storage/$answer1"
-                    else
-                        Warn "Folder not created."
-                        FBash=' '
-                    fi
+                    Warn "Folder not created."
+                    FBash=' '
                 fi
             fi
-            Input "Do you have a py script folder location to add? If so type the location here, else press enter to skip"
-            if [[ -z "${answer1// }" ]] || [[ "${answer1,,}" =~ ^n ]] ; then
-                Warn "No py script folder will be added, you can add this later in .config/autux/settings.json"
-                FPy=' '
+        fi
+        Input "Do you have a py script folder location to add? If so type the location here, else press enter to skip"
+        if [[ -z "${answer1// }" ]] || [[ "${answer1,,}" =~ ^n ]] ; then
+            Warn "No py script folder will be added, you can add this later in .config/autux/settings.json"
+            FPy=' '
+        else
+            if [ -d "$HOME/storage/$answer1" ]; then
+                FPy="$HOME/storage/$answer1"
             else
-                if [ -d "$HOME/storage/$answer1" ]; then
+                Warn "The folder '$answer1' does not exist."
+                Input "Would you like to create this folder? (y/n)"
+                if [[ "${answer1,,}" =~ ^y ]]; then
+                    mkdir -p "$HOME/storage/$answer1"
+                    Info "Folder created at: $answer1"
                     FPy="$HOME/storage/$answer1"
                 else
-                    Warn "The folder '$answer1' does not exist."
-                    Input "Would you like to create this folder? (y/n)"
-                    if [[ "${answer1,,}" =~ ^y ]]; then
-                        mkdir -p "$HOME/storage/$answer1"
-                        Info "Folder created at: $answer1"
-                        FPy="$HOME/storage/$answer1"
-                    else
-                        Warn "Folder not created."
-                        FPy=' '
-                    fi
+                    Warn "Folder not created."
+                    FPy=' '
                 fi
             fi
-        elif [[ "${answer1,,}" =~ ^y ]]; then
-            mkdir -p "$HOME/storage/documents/scripts/bash"
-            FBash="$HOME/storage/documents/scripts/bash"
-            mkdir -p "$HOME/storage/documents/scripts/py"
-            FPy="$HOME/storage/documents/scripts/py"
-            Info "Folder '$HOME/storage/documents/scripts/bash' created" "Folder '$HOME/storage/documents/scripts/bash'"
         fi
+    elif [[ "${answer1,,}" =~ ^y ]]; then
+        mkdir -p "$HOME/storage/shared/Documents/scripts/bash"
+        FBash="$HOME/storage/shared/Documents/scripts/bash"
+        mkdir -p "$HOME/storage/shared/Documents/scripts/py"
+        FPy="$HOME/storage/shared/Documents/scripts/py"
+        Info "Folder '$HOME/storage/shared/Documents/scripts/bash' created" "Folder '$HOME/storage/shared/Documents/scripts/bash'"
     fi
     if [ ! -d "$HOME/.local/bin" ]; then
         mkdir -p "$HOME/.local/bin"
@@ -440,4 +408,6 @@ Setup () {
 }
 
 # <!-- Run ----->
+Start
 Setup
+End
