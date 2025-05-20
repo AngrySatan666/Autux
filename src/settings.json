@@ -1,0 +1,40 @@
+{
+    "README!" : {
+        "What Is ...": {
+            "Storage": [
+                "Storage refers to your local folder for holding your scripts that will be automatically copied into your $HOME/.local/bin or $VENV/scripts",
+                "This adds it your PATH, applies chmod +x, and to your activated VenV for python it adds to sys.path so you can call them from any location"
+            ],
+            "bashFolder": [
+                "This is the folder where your bash scripts are stored",
+                "It is automatically copied to $HOME/.local/bin and chmod +x is applied",
+                "This is also adds it to your PATH",
+                "If you update a script, simply cly close this session and start a new one"
+            ],
+            "pyFolder" : [
+                "This is the folder where your python scripts are stored",
+                "It is automatically copied to $VENV/scripts and chmod +x is applied",
+                "This is also adds it to your PATH",
+                "If you update a script, simply deactivate and 'source $VENV/bin/activate' again"
+            ],
+            "Venv": [
+                "This is the virtual environment Autux created for you",
+                "Activate it manually with 'source $VENV/bin/activate'",
+                "Deactivate it manually with 'deactivate'",
+                "You can create more by copying the VenV key below and changing the path to a legable /data/data/com.termux/* address",
+                "datetime must be with all Autux Environments for logging",
+                "You can add dependencies to the pre-configured VenV key, but do NOT change its path!"
+            ]
+        }
+    },
+    "Storage": {
+        "bashFolder": "/data/data/com.termux/files/home/storage/shared/Termux/bash",
+        "pyFolder": "/data/data/com.termux/files/home/storage/shared/Termux/py"
+    },
+    "VenV": {
+        "path": "/data/data/com.termux/files/home/storage/shared/Termux/VenV",
+        "depend": [
+            "datetime"
+        ]
+    }
+}

@@ -1,0 +1,6 @@
+python
+android-tools
+ranger
+jq
+rclone
+bash-completion

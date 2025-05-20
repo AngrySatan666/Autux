@@ -16,8 +16,8 @@ def add_dir_and_subdirs(path):
                     sys.path.append(subdir)
 
 ## <!-- [SS-3]: Main Script -----> ##
-for var, value in os.environ.items():
-    add_dir_and_subdirs(value)
+for p in os.environ.get("PATH", "").split(os.pathsep):
+    add_dir_and_subdirs(p)
 
 if os.path.isdir(autux_path) and autux_path not in sys.path:
     sys.path.insert(0, autux_path)

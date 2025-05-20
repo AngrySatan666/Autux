@@ -1,6 +1,6 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
-# <!-- Build Descrip / Linking ----->
+# <!-- [SS-1]: Build Descrip / Linking ----->
 TERMUX_PKG_HOMEPAGE=https://github.com/AngrySatan666/Autux
 TERMUX_PKG_DESCRIPTION="Device Automation via Wireless Debugging ADB bridge"
 TERMUX_PKG_LICENSE="None"
@@ -11,10 +11,9 @@ TERMUX_PKG_SHA256=
 TERMUX_PKG_AUTO_UPDATE=true
 TERMUX_PKG_GROUPS="automation"
 
-# <!-- The Build Params ----->
+# <!-- [SS-2]: The Build Params ----->
 # dependencies #
-TERMUX_PKG_DEPENDS="android-tools, python"
-TERMUX_PKG_PYTHON_TARGET_DEPS="datetime, requests"
+TERMUX_PKG_DEPENDS="python, android-tools, ranger, jq, rclone, bash-completion"
 
 # how to build #
 TERMUX_PKG_PLATFORM_INDEPENDENT=true
@@ -23,7 +22,7 @@ TERMUX_PKG_CONFFILES="etc/autux/settings.json"
 TERMUX_PKG_SERVICE_SCRIPT="autux: ./"
 TERMUX_PKG_NO_DEBUG=true
 
-# <!-- The Build ----->
+# <!-- [SS-3]: The Build ----->
 termux_step_pre_configure() {
 
 }
