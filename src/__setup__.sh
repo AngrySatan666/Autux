@@ -186,17 +186,22 @@ Storage () {
     fi
     if [ ! -d "$HOME/.config/autux" ]; then
         mkdir -p "$HOME/.config/autux"
+        echo -n > "$HOME/.config/autux/settings.json"
         cp -v "$SCR_DIR/settings.json" "$HOME/.config/autux/settings.json" || Error "Failed to copy $SCR_DIR/settings.json"
     fi
     if [ ! -d "$PREFIX/share/doc/autux" ]; then
         Info "Creating documentation..."
         mkdir -p "$PREFIX/share/doc/autux"
+        echo -n > "$PREFIX/share/doc/autux/LICENSE"
+        echo -n > "$PREFIX/share/doc/autux/copyright"
+        echo -n > "$PREFIX/share/doc/autux/README.md"
         cp -av "$SCR_DIR/doc/." "$PREFIX/share/doc/autux/" || Error "Failed to copy $SCR_DIR/doc/."
         Info "Documentation created successfully."
     fi
     if [ ! -d "$PREFIX/etc/autux" ]; then
         mkdir -p "$PREFIX/etc/autux"
-        cp -av "$SCR_DIR/session.sh" "$PREFIX/etc/autux/session"
+        echo -n > "$PREFIX/etc/autux/session"
+        cp "$SCR_DIR/session.sh" "$PREFIX/etc/autux/session"
     fi
     Info "Folder Creation Complete"
 }
@@ -322,7 +327,6 @@ Depends () {
                 echo "$new_line7" >> "$rc_file"
                 Info "Added target line to existing rc.conf"
             fi
-            fi
             local target_line8="set colorscheme default"
             local new_line8="set colorscheme snow"
             if grep -q "^$target_line8" "$rc_file"; then
@@ -365,27 +369,25 @@ Depends () {
 Bash () {
     # <!-- $PREFIX/etc/bash.bashrc ----->
     Info "Setting bash.bashrc..."
-    PS1='\[\e[0;31m\]\w\[\e[0m\] \[\e[0;32m\]\$\[\e[0m\] '
     if [ -f "$PREFIX/etc/bash.bashrc" ]; then
         if grep -q '^PROMPT_DIRTRIM=' "$PREFIX/etc/bash.bashrc"; then
             sed -i 's/^PROMPT_DIRTRIM=.*/PROMPT_DIRTRIM=0/' "$PREFIX/etc/bash.bashrc"
         else
             echo 'PROMPT_DIRTRIM=0' >> "$PREFIX/etc/bash.bashrc"
         fi
-        if grep -q '^PS1=' "$PREFIX/etc/bash.bashrc"; then
-            sed -i "s/^PS1=.*/$PS1/g" "$PREFIX/etc/bash.bashrc"
-        else
-            echo "$PS1" >> "$PREFIX/etc/bash.bashrc"
-        fi
     fi
-    SETTINGS="$HOME/.config/autux/settings.json"
-    if command -v jq >/dev/null 2>&1; then
-        export FBash="$(jq -r '.Storage.bashFolder' "$SETTINGS")"
-        export FPy="$(jq -r '.Storage.pyFolder' "$SETTINGS")"
-    else
-        export FBash="$(grep -oP '"bashFolder":\\s*"\\K[^"]+' "$SETTINGS")"
-        export FPy="$(grep -oP '"pyFolder":\\s*"\\K[^"]+' "$SETTINGS")"
-    fi
+    echo "SETAUT="$HOME/.config/autux/settings.json"" >> "$PREFIX/etc/bash.bashrc"
+    echo "if command -v jq >/dev/null 2>&1; then" >> "$PREFIX/etc/bash.bashrc"
+    echo "export FBash="$(jq -r '.Storage.bashFolder' "$SETAUT")"" >> "$PREFIX/etc/bash.bashrc"
+    echo "export FPy="$(jq -r '.Storage.pyFolder' "$SETAUT")"" >> "$PREFIX/etc/bash.bashrc"
+    echo "else" >> "$PREFIX/etc/bash.bashrc"
+    echo "export FBash="$(grep -oP '"bashFolder":\\s*"\\K[^"]+' "$SETAUT")"" >> "$PREFIX/etc/bash.bashrc"
+    echo "export FPy="$(grep -oP '"pyFolder":\\s*"\\K[^"]+' "$SETAUT")"" >> "$PREFIX/etc/bash.bashrc"
+    echo "fi" >> "$PREFIX/etc/bash.bashrc"
+    echo "export LX="$HOME/.local/bin"" >> "$PREFIX/etc/bash.bashrc"
+    echo "export PX="$HOME/VenV/scripts"" >> "$PREFIX/etc/bash.bashrc"
+    echo "cp -av "$FPy" "$PX""
+    echo "cp -av "$FBash" "$LX""
     echo "Welcome to Autux!" > "$PREFIX/etc/motd"
     [ -f "$HOME/.lesshst" ] && rm -f "$HOME/.lesshst"
     : > "$HOME/.bash_history"
@@ -422,15 +424,15 @@ IDE () {
 # <!-- Setup the PyVenV ----->
 PyVenV () {
     # <!-- Create the Env ----->
+    if ! pkg list-packages | grep -qe 'python'; then
+        pkg install python -y
+    fi
     if [[ -d "$VENV" ]]; then
         Info "Python venv folder already exists" "Converting to venv"
     elif [ ! -d "$VENV" ]; then
         Info "Creating Python venv folder" "Converting to venv"
         mkdir -p "$VENV/scripts"
         export PATH="$VENV/scripts:$PATH"
-    fi
-    if ! pkg list-packages | grep -qe 'python'; then
-        pkg install python -y
     fi
     python3 -m venv "$VENV" --prompt "VenV"
     Info "PyVenV Built, activating to install dependencies"
@@ -449,13 +451,8 @@ PyVenV () {
     Info "PyVenV Site-Packages edited"
     # <!-- Edit bin/activate ----->
     Info "Editing PyVenV bin"
-    ACTIVATE="$VENV/bin/activate"
-    SESSION_SH="$PREFIX/etc/autux/session.sh"
-    if [ -f "$ACTIVATE" ] && ! grep -q "source.*session.sh" "$ACTIVATE"; then
-        echo "" >> "$ACTIVATE"
-        echo "# Autux: Source session.sh on venv activation" >> "$ACTIVATE"
-        echo "[ -f \"$SESSION_SH\" ] && source \"$SESSION_SH\"" >> "$ACTIVATE"
-    fi
+    echo "cp -av "$FPy" "$PX""
+    echo "cp -av "$FBash" "$LX""
 }
 
 Setup () {

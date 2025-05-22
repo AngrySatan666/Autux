@@ -145,6 +145,8 @@ def main () :
         noapp(args.noapp)
     if args.record_taps:
         record_taps(label=args.label)
+    elif not args :
+        record_taps()
 
 if __name__ == "__main__" :
     main ()
