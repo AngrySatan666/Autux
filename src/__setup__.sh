@@ -474,7 +474,7 @@ PyVenV () {
         mkdir -p "$VENV/lib/python$PYVER/site-packages"
         echo -n > "$VENV/lib/python$PYVER/site-packages/sitecustomize.py"
         cp "$SCR_DIR/sitecustomize.py" "$VENV/lib/python$PYVER/site-packages/sitecustomize.py"
-        "$VENV/bin/pip" install -e "$SCR_DIR/site.customize"
+        "$VENV/bin/pip" install -e "$SCR_DIR/sitecustomize.py"
     fi
     Info "PyVenV Site-Packages edited"
     # <!-- Edit bin/activate ----->
