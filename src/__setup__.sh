@@ -176,18 +176,25 @@ Storage () {
         FPy="$HOME/storage/shared/Termux/py"
         Info "Folders and Variables Created"
     fi
-    Info "Creating Termux Folders"
     if [ ! -d "$HOME/.local/bin" ]; then
+        Info "Creating HOME Executable Directory"
         mkdir -p "$HOME/.local/bin"
         mkdir -p "$HOME/.local/share"
+        Info "Directories Created"
     fi
     if [ ! -d "$VENV/scripts" ]; then
+        Info "Creating the VenV/scripts Directory"
         mkdir -p "$VENV/scripts"
+        VENV="$HOME/VenV"
+        PX="$VENV/scripts"
+        Info "Folders and Variables Created"
     fi
     if [ ! -d "$HOME/.config/autux" ]; then
+        Info "Creating settings.json"
         mkdir -p "$HOME/.config/autux"
         echo -n > "$HOME/.config/autux/settings.json"
         cp -v "$SCR_DIR/settings.json" "$HOME/.config/autux/settings.json" || Error "Failed to copy $SCR_DIR/settings.json"
+        Info "Settings Created"
     fi
     if [ ! -d "$PREFIX/share/doc/autux" ]; then
         Info "Creating documentation..."
@@ -199,11 +206,13 @@ Storage () {
         Info "Documentation created successfully."
     fi
     if [ ! -d "$PREFIX/etc/autux" ]; then
+        Info "Creating Service Script Source"
         mkdir -p "$PREFIX/etc/autux"
         echo -n > "$PREFIX/etc/autux/session"
         cp "$SCR_DIR/session.sh" "$PREFIX/etc/autux/session"
+        Info "Service Dir & Files Created"
     fi
-    Info "Folder Creation Complete"
+    Info "Storage Setup and Configuration Complete"
 }
 
 # <!-- Install Packages ----->
@@ -227,7 +236,7 @@ Depends () {
     }
     Ranger () {
         if ! pkg list-installed | grep -qe 'ranger'; then
-            Warn "Ranger not installed, Installing now"
+            Warn "Ranger not installed" "Installing now"
             pkg install ranger -y
             Info "Ranger installed successfully"
         fi
@@ -237,6 +246,9 @@ Depends () {
             mkdir -p "$HOME/.config/ranger"
             Info "Ranger config folder created"
         fi
+        local rc_file="$HOME/.config/ranger/rc.conf"
+        local target_line1="set show_hidden false"
+        local new_line1="set show_hidden true"
         if [ ! -f "$rc_file" ]; then
             Warn "Ranger Configs not found, Attempting to create rc.conf with ranger"
             ranger --copy-config=rc
@@ -248,9 +260,6 @@ Depends () {
             fi
         fi
         if [ -f "$rc_file" ]; then
-            local rc_file="$HOME/.config/ranger/rc.conf"
-            local target_line1="set show_hidden false"
-            local new_line1="set show_hidden true"
             if grep -q "^$target_line1" "$rc_file"; then
                 Info "Editing target line present in rc.conf"
                 sed -i "s/^$target_line1.*/$new_line1/" "$rc_file"
@@ -342,7 +351,7 @@ Depends () {
         fi
         # Share/boomarks/history/tagged #
         if [ ! -d "$HOME/.local/share/ranger" ]; then
-            Warn "Rangers Local configs folder not found" "Creating"
+            Warn "Rangers Local configs folder not found" "Manually Creating Ranger Configs file"
             mkdir -p "$HOME/.local/share/ranger"
         fi
         if [ ! -f "$HOME/.local/share/ranger/bookmarks" ]; then
@@ -369,30 +378,34 @@ Depends () {
 Bash () {
     # <!-- $PREFIX/etc/bash.bashrc ----->
     Info "Setting bash.bashrc..."
-    if [ -f "$PREFIX/etc/bash.bashrc" ]; then
-        if grep -q '^PROMPT_DIRTRIM=' "$PREFIX/etc/bash.bashrc"; then
-            sed -i 's/^PROMPT_DIRTRIM=.*/PROMPT_DIRTRIM=0/' "$PREFIX/etc/bash.bashrc"
-        else
-            echo 'PROMPT_DIRTRIM=0' >> "$PREFIX/etc/bash.bashrc"
-        fi
+    if grep -q '^PROMPT_DIRTRIM=' "$PREFIX/etc/bash.bashrc"; then
+        sed -i 's/^PROMPT_DIRTRIM=.*/PROMPT_DIRTRIM=0/' "$PREFIX/etc/bash.bashrc"
+    else
+        echo 'PROMPT_DIRTRIM=0' >> "$PREFIX/etc/bash.bashrc"
     fi
-    echo "SETAUT="$HOME/.config/autux/settings.json"" >> "$PREFIX/etc/bash.bashrc"
+    echo "## Autux Configs ##" >> "$PREFIX/etc/bash.bashrc"
     echo "if command -v jq >/dev/null 2>&1; then" >> "$PREFIX/etc/bash.bashrc"
-    echo "export FBash="$(jq -r '.Storage.bashFolder' "$SETAUT")"" >> "$PREFIX/etc/bash.bashrc"
-    echo "export FPy="$(jq -r '.Storage.pyFolder' "$SETAUT")"" >> "$PREFIX/etc/bash.bashrc"
+    echo "    export FBash="$(jq -r '.Storage.bashFolder' "$HOME/.config/autux/settings.json")"" >> "$PREFIX/etc/bash.bashrc"
+    echo "    export FPy="$(jq -r '.Storage.pyFolder' "$HOME/.config/autux/settings.json")"" >> "$PREFIX/etc/bash.bashrc"
     echo "else" >> "$PREFIX/etc/bash.bashrc"
-    echo "export FBash="$(grep -oP '"bashFolder":\\s*"\\K[^"]+' "$SETAUT")"" >> "$PREFIX/etc/bash.bashrc"
-    echo "export FPy="$(grep -oP '"pyFolder":\\s*"\\K[^"]+' "$SETAUT")"" >> "$PREFIX/etc/bash.bashrc"
+    echo "    export FBash="$(grep -oP '"bashFolder":\\s*"\\K[^"]+' "$HOME/.config/autux/settings.json")"" >> "$PREFIX/etc/bash.bashrc"
+    echo "    export FPy="$(grep -oP '"pyFolder":\\s*"\\K[^"]+' "$HOME/.config/autux/settings.json")"" >> "$PREFIX/etc/bash.bashrc"
     echo "fi" >> "$PREFIX/etc/bash.bashrc"
     echo "export LX="$HOME/.local/bin"" >> "$PREFIX/etc/bash.bashrc"
     echo "export PX="$HOME/VenV/scripts"" >> "$PREFIX/etc/bash.bashrc"
-    echo "cp -av "$FPy" "$PX""
-    echo "cp -av "$FBash" "$LX""
+    echo "export VENV="$HOME/VenV"" >> "$PREFIX/etc/bash.bashrc"
+    echo "cp -av "$FPy" "$HOME/VenV/scripts"" >> "$PREFIX/etc/bash.bashrc"
+    echo "cp -av "$FBash" "$HOME/.local/bin"" >> "$PREFIX/etc/bash.bashrc"
     echo "Welcome to Autux!" > "$PREFIX/etc/motd"
     [ -f "$HOME/.lesshst" ] && rm -f "$HOME/.lesshst"
     : > "$HOME/.bash_history"
+    Info "Changes Made to bash.bashrc"
+    Warn "Attempting to re source the bash.bashrc to accept the changes"
+    Timer 5
+    set +u
     source "$PREFIX/etc/bash.bashrc"
     Info "bash.bashrc Set Successfully"
+    set -u
 }
 
 # <!-- Set Terminal Configs ----->
@@ -418,26 +431,40 @@ IDE () {
         echo "# Using default color theme." > "$HOME/.termux/colors.properties"
         Info "Color scheme set to default successfully."
     fi
+    set +u
     termux-reload-settings
+    set -u
 }
 
 # <!-- Setup the PyVenV ----->
 PyVenV () {
     # <!-- Create the Env ----->
     if ! pkg list-packages | grep -qe 'python'; then
+        Warn "Python Not Installed" "Installing"
         pkg install python -y
+        Info "Python Installed"
     fi
     if [[ -d "$VENV" ]]; then
-        Info "Python venv folder already exists" "Converting to venv"
+        Info "Python venv folder exists"
     elif [ ! -d "$VENV" ]; then
-        Info "Creating Python venv folder" "Converting to venv"
+        Info "Creating Python venv folder"
         mkdir -p "$VENV/scripts"
         export PATH="$VENV/scripts:$PATH"
+        Info "Folder made and exported to PATH"
     fi
-    python3 -m venv "$VENV" --prompt "VenV"
-    Info "PyVenV Built, activating to install dependencies"
-    source "$VENV/bin/activate"
-    python3 -m pip install --upgrade pip wheel setuptools
+    if [ ! -f "$VENV/bin/activate" ]; then
+        Info "Attempting to create the VenV at $VENV"
+        python3 -m venv "$VENV" --prompt "VenV"
+        Info "PyVenV Built"
+    fi
+    if [ -f "$VENV/bin/activate" ]; then
+        Info "Activating to update PIP"
+        set +u
+        source "$VENV/bin/activate"
+        python3 -m pip install --upgrade pip wheel setuptools
+        Info "PIP SETUPTOOLS & WHEEL Updated"
+    fi
+    Warn "Installing Deps"
     PAK "pip"
     Info "Python venv created and dependencies installed."
     # <!-- Set Site.customize ----->
@@ -445,14 +472,36 @@ PyVenV () {
     PYVER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
     if [ -n "$PYVER" ]; then
         mkdir -p "$VENV/lib/python$PYVER/site-packages"
-        cp -r "$SCR_DIR/py" "$VENV/lib/python$PYVER/site-packages/"
+        echo -n > "$VENV/lib/python$PYVER/site-packages/sitecustomize.py"
+        cp "$SCR_DIR/sitecustomize.py" "$VENV/lib/python$PYVER/site-packages/sitecustomize.py"
         "$VENV/bin/pip" install -e "$SCR_DIR/site.customize"
     fi
     Info "PyVenV Site-Packages edited"
     # <!-- Edit bin/activate ----->
-    Info "Editing PyVenV bin"
-    echo "cp -av "$FPy" "$PX""
-    echo "cp -av "$FBash" "$LX""
+    if [ -f "$VENV/bin/activate" ]; then
+        Info "Editing PyVenV bin"
+        echo " " >> "$VENV/bin/activate"
+        echo "## Autux Configs ##" >> "$VENV/bin/activate"
+        echo "if command -v jq >/dev/null 2>&1; then" >> "$VENV/bin/activate"
+        echo "    export FBash="$(jq -r '.Storage.bashFolder' "$HOME/.config/autux/settings.json")"" >> "$VENV/bin/activate"
+        echo "    export FPy="$(jq -r '.Storage.pyFolder' "$HOME/.config/autux/settings.json")"" >> "$VENV/bin/activate"
+        echo "else" >> "$VENV/bin/activate"
+        echo "    export FBash="$(grep -oP '"bashFolder":\\s*"\\K[^"]+' "$HOME/.config/autux/settings.json")"" >> "$VENV/bin/activate"
+        echo "    export FPy="$(grep -oP '"pyFolder":\\s*"\\K[^"]+' "$HOME/.config/autux/settings.json")"" >> "$VENV/bin/activate"
+        echo "fi" >> "$VENV/bin/activate"
+        echo "export LX="$HOME/.local/bin"" >> "$VENV/bin/activatae"
+        echo "export PX="$HOME/VenV/scripts"" >> "$VENV/bin/activate"
+        echo "export VENV="$HOME/VenV"" >> "$VENV/bin/activate"
+        echo "cp -av "$FPy" "$PX"" >> "$VENV/bin/activate"
+        echo "cp -av "$FBash" "$LX"" >> "$VENV/bin/activate"
+        Info "VenV bin/activate configured"
+    fi
+    Warn "Attempting to source the VenV"
+    set +u
+    Timer 5
+    source "$VENV/bin/activate"
+    Info "VenV Activation Set Successfully"
+    set -u
 }
 
 Setup () {
