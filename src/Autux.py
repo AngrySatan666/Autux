@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 ## <!-- [SS-0]: MetaData ----->
-Version = '0.0.27'
+Version = '0.0.29'
 Date = '5.20.25'
 
 ## <!-- [SS-1]: Imports ----->
@@ -11,16 +11,28 @@ import subprocess
 import os, re
 from datetime import datetime
 
-## <!-- [SS-3]: Variables ----->
-_dir = os.path.dirname(os.path.abspath(__file__))
+## <!-- [SS-3]: Variable Setting ----->
+global VENV, FPy, FBash, PX, LX, _dir, sav_dir
 VENV = os.environ.get("VENV")
-FX = os.environ.get("FPy")
+FPy = os.environ.get("FPy")
+FBash = os.environ.get("FBash")
+PX = os.environ.get("PX")
+LX = os.environ.get("LX")
+_dir = os.path.dirname(os.path.abspath("__file__"))
+print (_dir)
+sav_dir = (f"{PX}")
 
 # <!-- [SS-4]: Helper Functions ---->
 def exe (cmd) :
     try:
         result = subprocess.run(cmd, capture=True, text=True, check=True)
         print ("Output: ", result.stdout.strip())
+    except subprocess.CalledProcessError as e :
+        print ("Error: ", e.stderr.strip())
+
+def exep (cmd) :
+    try:
+        result = subprocess.run(cmd)
     except subprocess.CalledProcessError as e :
         print ("Error: ", e.stderr.strip())
 
@@ -37,10 +49,12 @@ def notify (title, content) :
     exe (cmd=["termux-notification", "--title", title, "--content", content])
 
 def scr (file) :
-    exe (cmd=["adb", "shell", "screencap", f"{_dir}/{file}.png"])
+    exe (cmd=["echo", "-n", ">", f"{sav_dir}/{file}.png"])
+    exep (cmd=["adb", "shell", "screencap", f"{sav_dir}/{file}.png"])
 
 def rec (file) :
-    exe (cmd=["adb", "shell", "screenrecord", f"{_dir}/{file}.mp4"])
+    exe (cmd=["echo", "-n", ">", f"{sav_dir}/{file}.mp4"])
+    exep (cmd=["adb", "shell", "screenrecord", f"{sav_dir}/{file}.mp4"])
 
 def norec () :
     exe (cmd=["adb", "shell", "pkill", "-l", "INT", "screenrecord"])
@@ -51,20 +65,26 @@ def app (pkg) :
 def noapp (pkg) :
     exe (cmd=["adb", "shell", "am", "force-stop", f"com.{pkg}"])
 
+def listcom () :
+    exe (cmd=["adb", "shell", "pm", "list", "packages"])
+
 ## <!-- [SS-5]: Main Functions ----->
 def start_screenrecord (output_file) :
-    return subprocess.Popen(["adb", "shell", "screenrecord", f"{_dir}/{output_file}"])
+    exe (cmd=["echo", "-n", ">", f"{sav_dir}/{output_file}"])
+    return subprocess.Popen(["adb", "shell", "screenrecord", f"{sav_dir}/{output_file}"])
 
 def record_taps (label=None, hold_threshold=0.5) :
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    base_name = f"{label}_" if label else ""
+    base_name = os.path.join(sav_dir, label) if label else sav_dir
     log_file = f"{base_name}tap_log{timestamp}.txt"
     video_file = f"{base_name}video_log{timestamp}.mp4"
+    exe (cmd=["echo", "-n", ">", f"{log_file}"])
+    exe (cmd=["echo", "-n", ">", f"{video_file}"])
     print (f"Recording to :\n  Log: {log_file}\n  Video: {video_file}\n  Press Ctrl+C to stop.")
     pattern_x = re.compile(r'ABS_MT_POSITION_X\s+(\w+)')
     pattern_y = re.compile(r'ABS_MT_POSITION_Y\s+(\w+)')
     screen_proc = start_screenrecord (video_file)
-    with open(os.path.join(_dir, log_file), "w") as f :
+    with open(log_file, "w") as f :
         proc = subprocess.Popen(["adb", "shell","getevent", "-lt"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         x = y = None
         gesture_points = []
@@ -113,8 +133,8 @@ def record_taps (label=None, hold_threshold=0.5) :
             proc.terminate()
             screen_proc.terminate()
             print ("Pulling to Local Storage")
-            exe (cmd=["mv", f"{_dir}/{log_file}", f"{FX}/{log_file}"])
-            exe (cmd=["mv", f"{_dir}/{video_file}", f"{FX}/{video_file}"])
+            exe (cmd=["mv", f"{_dir}/{log_file}", f"{FPy}/{log_file}"])
+            exe (cmd=["mv", f"{_dir}/{video_file}", f"{FPy}/{video_file}"])
 
 ## <!-- [SS-6]: Runnit ----->
 def main () :
@@ -130,6 +150,7 @@ def main () :
     parser.add_argument("--noapp", metavar="PKG", help="Force-stop app by package name")
     parser.add_argument("--record-taps", action="store_true", help="Start tap/screen recording session")
     parser.add_argument("--label", metavar="LABEL", help="Optional label for record-taps")
+    parser.add_argument("--listcom", help="List all installed apps to the console")
     args = parser.parse_args()
     if args.tap:
         tap(*args.tap)
@@ -151,6 +172,8 @@ def main () :
         noapp(args.noapp)
     if args.record_taps:
         record_taps(label=args.label)
+    if args.listcom:
+        listcom()
     if not any(vars(args).values()):
         record_taps(label=None)
 
