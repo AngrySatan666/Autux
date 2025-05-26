@@ -2,8 +2,8 @@
 
 set -euo pipefail
 IFS=$'\n\t'
-Version='0.4.106'
-Date='5.20.25'
+Version='0.4.127'
+Date='5.25.25'
 
 # <!-- Global Variables ----->
 PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
@@ -26,7 +26,6 @@ Start () {
     echo ""
     echo -e "${Cx}[INFO] __SETUP__ Starting...${R}"
     echo ""
-    echo "$SCR_DIR/"*
     sleep 2
 }
 
@@ -203,6 +202,12 @@ Storage () {
         echo -n > "$PREFIX/share/doc/autux/copyright"
         echo -n > "$PREFIX/share/doc/autux/README.md"
         cp -av "$SCR_DIR/doc/." "$PREFIX/share/doc/autux/" || Error "Failed to copy $SCR_DIR/doc/."
+        echo -n > "$PREFIX/share/doc/autux/PIP_Req.txt"
+        cp "$SCR_DIR/PIP_Req.txt" "$PREFIX/share/doc/autux/PIP_Req.txt"
+        echo -n > "$PREFIX/share/doc/autux/TMX_Req.txt"
+        cp "$SCR_DIR/TMX_Req.txt" "$PREFIX/share/doc/autux/TMX_Req.txt"
+        echo -n > "$PREFIX/share/doc/autux/settings.json"
+        cp "$SCR/settings.json" "$PREFIX/share/doc/autux/settings.json"
         Info "Documentation created successfully."
     fi
     if [ ! -d "$PREFIX/etc/autux" ]; then
@@ -210,9 +215,15 @@ Storage () {
         mkdir -p "$PREFIX/etc/autux"
         echo -n > "$PREFIX/etc/autux/session"
         cp "$SCR_DIR/session.sh" "$PREFIX/etc/autux/session"
+        echo -n > "$PREFIX/etc/autux/Autux"
+        cp "$SCR_DIR/Autux.py" "$PREFIX/etc/autux/Autux"
+        echo -n > "$PREFIX/etc/autux/sitecustomize.py"
+        cp "$SCR_DIR/sitecustomize.py" "$PREFIX/etc/autux/sitecustomize.py"
         Info "Service Dir & Files Created"
+        echo -n > "$PREFIX/etc/autux/__setup__"
+        cp "$SCR_DIR/__setup__.sh" "$PREFIX/etc/autux/__setup__"
     fi
-    Info "Storage Setup and Configuration Complete"
+    Info "Basic Storage Setup and Configuration Complete"
 }
 
 # <!-- Install Packages ----->
@@ -220,17 +231,23 @@ Depends () {
     PAK "tmx"
     Bash-Complete () {
         if ! pkg list-installed | grep -qe 'bash-completion'; then
+            Info "Installing Bash-Completion"
             pkg install bash-completion -y
+            Info "Installation Complete"
         fi
+        Info "Enabeling Bash-Completion with bash.bashrc"
         echo "[ -f "$PREFIX/etc/bash_completion" ] && ./$PREFIX/etc/bash_completion" >> "$PREFIX/etc/bash.bashrc"
+        Info "bash.bashrc appended"
         if [ ! -d "$PREFIX/share/bash-completion/completions" ]; then
-            Warn "Completions not found" "Creating"
+            Warn "Completions Directory not found" "Creating"
             mkdir -p "$PREFIX/share/bash-completion/completions"
             Info "Completions Folder created"
         fi
         if [ ! -f "$PREFIX/share/bash-competion/completions/autux" ]; then
+            Info "Creating Autux Completions in Completions Directory"
             echo -n > "$PREFIX/share/bash-completion/completions/autux"
             cp -v "$SCR_DIR/autux" "$PREFIX/share/bash-completion/completions/autux" || Error "Failed to copy $SCR_DIR/autux"
+            Info "Completions Set"
         fi
         Info "Bash-Completion Configured"
     }
@@ -246,9 +263,7 @@ Depends () {
             mkdir -p "$HOME/.config/ranger"
             Info "Ranger config folder created"
         fi
-        local rc_file="$HOME/.config/ranger/rc.conf"
-        local target_line1="set show_hidden false"
-        local new_line1="set show_hidden true"
+        export rc_file="$HOME/.config/ranger/rc.conf"
         if [ ! -f "$rc_file" ]; then
             Warn "Ranger Configs not found, Attempting to create rc.conf with ranger"
             ranger --copy-config=rc
@@ -260,6 +275,8 @@ Depends () {
             fi
         fi
         if [ -f "$rc_file" ]; then
+            local target_line1="set show_hidden false"
+            local new_line1="set show_hidden true"
             if grep -q "^$target_line1" "$rc_file"; then
                 Info "Editing target line present in rc.conf"
                 sed -i "s/^$target_line1.*/$new_line1/" "$rc_file"
@@ -353,20 +370,30 @@ Depends () {
         if [ ! -d "$HOME/.local/share/ranger" ]; then
             Warn "Rangers Local configs folder not found" "Manually Creating Ranger Configs file"
             mkdir -p "$HOME/.local/share/ranger"
+            Info "Ranger Local Configs folder created"
         fi
         if [ ! -f "$HOME/.local/share/ranger/bookmarks" ]; then
+            Warn "bookmarks file not found"
+            Info "Creating Bookmarks file"
             echo "':/data/data" > "$HOME/.local/share/ranger/bookmarks"
+            Info "Bookmarks file created"
         fi
         if [ -f "$HOME/.local/share/ranger/bookmarks" ]; then
+            Info "Including Locations to Bookmarks File"
             echo "':$VENV/scripts" >> "$HOME/.local/share/ranger/bookmarks"
             echo "':$HOME/.local/bin" >> "$HOME/.local/share/ranger/bookmarks"
             echo "':$HOME/storage/shared/Termux" >> "$HOME/.local/share/ranger/bookmarks"
+            Info "Bookmarks Set Successfully"
         fi
         if [ ! -f "$HOME/.local/share/ranger/history" ]; then
+            Info "Creating Local History Config File"
             echo -n > "$HOME/.local/share/ranger/history"
+            Info "History Config Created"
         fi
         if [ ! -f "$HOME/.local/share/ranger/tagged" ]; then
+            Info "Creating Local Tagged Config File"
             echo -n > "$HOME/.local/share/ranger/tagged"
+            Info "Tagged Config Created"
         fi
         Info "Ranger Fully Configured"
     }
@@ -383,20 +410,24 @@ Bash () {
     else
         echo 'PROMPT_DIRTRIM=0' >> "$PREFIX/etc/bash.bashrc"
     fi
-    echo "## Autux Configs ##" >> "$PREFIX/etc/bash.bashrc"
-    echo "if command -v jq >/dev/null 2>&1; then" >> "$PREFIX/etc/bash.bashrc"
-    echo "    export FBash="$(jq -r '.Storage.bashFolder' "$HOME/.config/autux/settings.json")"" >> "$PREFIX/etc/bash.bashrc"
-    echo "    export FPy="$(jq -r '.Storage.pyFolder' "$HOME/.config/autux/settings.json")"" >> "$PREFIX/etc/bash.bashrc"
-    echo "else" >> "$PREFIX/etc/bash.bashrc"
-    echo "    export FBash="$(grep -oP '"bashFolder":\\s*"\\K[^"]+' "$HOME/.config/autux/settings.json")"" >> "$PREFIX/etc/bash.bashrc"
-    echo "    export FPy="$(grep -oP '"pyFolder":\\s*"\\K[^"]+' "$HOME/.config/autux/settings.json")"" >> "$PREFIX/etc/bash.bashrc"
-    echo "fi" >> "$PREFIX/etc/bash.bashrc"
-    echo "export LX="$HOME/.local/bin"" >> "$PREFIX/etc/bash.bashrc"
-    echo "export PX="$HOME/VenV/scripts"" >> "$PREFIX/etc/bash.bashrc"
-    echo "export VENV="$HOME/VenV"" >> "$PREFIX/etc/bash.bashrc"
-    echo "cp -av "$FPy" "$HOME/VenV/scripts"" >> "$PREFIX/etc/bash.bashrc"
-    echo "cp -av "$FBash" "$HOME/.local/bin"" >> "$PREFIX/etc/bash.bashrc"
-    echo "Welcome to Autux!" > "$PREFIX/etc/motd"
+    echo '## Autux Configs ##' >> "$PREFIX/etc/bash.bashrc"
+    echo 'if command -v jq >/dev/null 2>&1; then' >> "$PREFIX/etc/bash.bashrc"
+    echo '    export FBash="$(jq -r '.Storage.bashFolder' "$HOME/.config/autux/settings.json")"' >> "$PREFIX/etc/bash.bashrc"
+    echo '    export FPy="$(jq -r '.Storage.pyFolder' "$HOME/.config/autux/settings.json")"' >> "$PREFIX/etc/bash.bashrc"
+    echo 'else' >> "$PREFIX/etc/bash.bashrc"
+    echo '    export FBash="$(grep -oP '"'"'bashFolder":\s*"\K[^"]+'"'"' "$HOME/.config/autux/settings.json")"' >> "$PREFIX/etc/bash.bashrc"
+    echo '    export FPy="$(grep -oP '"'"'pyFolder":\s*"\K[^"]+'"'"' "$HOME/.config/autux/settings.json")"' >> "$PREFIX/etc/bash.bashrc"
+    echo 'fi' >> "$PREFIX/etc/bash.bashrc"
+    echo 'export LX="$HOME/.local/bin"' >> "$PREFIX/etc/bash.bashrc"
+    echo 'export PX="$HOME/VenV/scripts"' >> "$PREFIX/etc/bash.bashrc"
+    echo 'export VENV="$HOME/VenV"' >> "$PREFIX/etc/bash.bashrc"
+    echo 'cp -av "$FPy" "$HOME/VenV/scripts"' >> "$PREFIX/etc/bash.bashrc"
+    echo 'cp -av "$FBash" "$HOME/.local/bin"' >> "$PREFIX/etc/bash.bashrc"
+    echo 'export PATH="$LX:$PATH"' >> "$PREFIX/etc/bash.bashrc"
+    echo 'export PATH="$PX:$PATH"' >> "$PREFIX/etc/bash.bashrc"
+    echo 'export PATH="$PREFIX/etc/autux:$PATH"' >> "$PREFIX/etc/bash.bashrc"
+    echo 'find "$LX" "$PX" "$PREFIX/etc/autux" -type f -exec chmod +x {} \;' >> "$PREFIX/etc/bash.bashrc"
+    echo 'Welcome to Autux!' > "$PREFIX/etc/motd"
     [ -f "$HOME/.lesshst" ] && rm -f "$HOME/.lesshst"
     : > "$HOME/.bash_history"
     Info "Changes Made to bash.bashrc"
@@ -474,26 +505,30 @@ PyVenV () {
         mkdir -p "$VENV/lib/python$PYVER/site-packages"
         echo -n > "$VENV/lib/python$PYVER/site-packages/sitecustomize.py"
         cp "$SCR_DIR/sitecustomize.py" "$VENV/lib/python$PYVER/site-packages/sitecustomize.py"
-        "$VENV/bin/pip" install -e "$SCR_DIR/sitecustomize.py"
     fi
     Info "PyVenV Site-Packages edited"
     # <!-- Edit bin/activate ----->
     if [ -f "$VENV/bin/activate" ]; then
         Info "Editing PyVenV bin"
-        echo " " >> "$VENV/bin/activate"
-        echo "## Autux Configs ##" >> "$VENV/bin/activate"
-        echo "if command -v jq >/dev/null 2>&1; then" >> "$VENV/bin/activate"
-        echo "    export FBash="$(jq -r '.Storage.bashFolder' "$HOME/.config/autux/settings.json")"" >> "$VENV/bin/activate"
-        echo "    export FPy="$(jq -r '.Storage.pyFolder' "$HOME/.config/autux/settings.json")"" >> "$VENV/bin/activate"
-        echo "else" >> "$VENV/bin/activate"
-        echo "    export FBash="$(grep -oP '"bashFolder":\\s*"\\K[^"]+' "$HOME/.config/autux/settings.json")"" >> "$VENV/bin/activate"
-        echo "    export FPy="$(grep -oP '"pyFolder":\\s*"\\K[^"]+' "$HOME/.config/autux/settings.json")"" >> "$VENV/bin/activate"
-        echo "fi" >> "$VENV/bin/activate"
-        echo "export LX="$HOME/.local/bin"" >> "$VENV/bin/activatae"
-        echo "export PX="$HOME/VenV/scripts"" >> "$VENV/bin/activate"
-        echo "export VENV="$HOME/VenV"" >> "$VENV/bin/activate"
-        echo "cp -av "$FPy" "$PX"" >> "$VENV/bin/activate"
-        echo "cp -av "$FBash" "$LX"" >> "$VENV/bin/activate"
+        echo ' ' >> "$VENV/bin/activate"
+        echo '## Autux Configs ##' >> "$VENV/bin/activate"
+        echo 'if command -v jq >/dev/null 2>&1; then' >> "$VENV/bin/activate"
+        echo '    export FBash="$(jq -r ''.Storage.bashFolder'' "$HOME/.config/autux/settings.json")"' >> "$VENV/bin/activate"
+        echo '    export FPy="$(jq -r ''.Storage.pyFolder'' "$HOME/.config/autux/settings.json")"' >> "$VENV/bin/activate"
+        echo 'else' >> "$VENV/bin/activate"
+        echo '    export FBash="$(grep -oP '"'"'bashFolder":\s*"\K[^"]+'"'"' "$HOME/.config/autux/settings.json")"' >> "$VENV/bin/activate"
+        echo '    export FPy="$(grep -oP '"'"'pyFolder":\s*"\K[^"]+'"'"' "$HOME/.config/autux/settings.json")"' >> "$VENV/bin/activate"
+        echo 'fi' >> "$VENV/bin/activate"
+        echo 'export LX="$HOME/.local/bin"' >> "$VENV/bin/activate"
+        echo 'export PX="$HOME/VenV/scripts"' >> "$VENV/bin/activate"
+        echo 'export VENV="$HOME/VenV"' >> "$VENV/bin/activate"
+        echo 'cp -av "$FPy" "$PX"' >> "$VENV/bin/activate"
+        echo 'cp -av "$FBash" "$LX"' >> "$VENV/bin/activate"
+        echo 'export PATH="$LX:$PATH"' >> "$VENV/bin/activate"
+        echo 'export PATH="$PX:$PATH"' >> "$VENV/bin/activate"
+        echo 'export PATH="$PREFIX/etc/autux:$PATH"' >> "$VENV/bin/activate"
+        echo 'find "$LX" "$PX" "$PREFIX/etc/autux" -type f -exec chmod +x {} \;' >> "$VENV/bin/activate"
+        echo 'cd "$PX"'
         Info "VenV bin/activate configured"
     fi
     Warn "Attempting to source the VenV"
@@ -516,5 +551,4 @@ Setup () {
 }
 
 # <!-- Run ----->
-echo "$SCR_DIR"
 Setup

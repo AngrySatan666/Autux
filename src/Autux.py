@@ -90,9 +90,15 @@ def record_taps (label=None, hold_threshold=0.5) :
                 elif 'BTN_TOUCH' in line and 'UP' in line :
                     duration = time.time() - touch_start_time if touch_start_time else 0
                     gesture_type = "Tap"
-                    if duration >= hold_threshold and len(gesture_points) == 1 :
+                    if gesture_points:
+                        x0, y0 = gesture_points[0]
+                        x1, y1 = gesture_points[-1]
+                        dist = ((x1 - x0)**2 + (y1 - y0)**2) ** 0.5
+                    else:
+                        dist = 0
+                    if duration >= hold_threshold and dist <= 10:
                         gesture_type = "Hold"
-                    elif len(set(gesture_points)) >1 :
+                    elif dist > 10:
                         gesture_type = "Swipe"
                     timestamp_now = datetime.now().isoformat()
                     log_line = f"[{timestamp_now}] {gesture_type} ({duration:.2f}s): {gesture_points}\n"
@@ -145,8 +151,8 @@ def main () :
         noapp(args.noapp)
     if args.record_taps:
         record_taps(label=args.label)
-    elif not args :
-        record_taps()
+    if not any(vars(args).values()):
+        record_taps(label=None)
 
 if __name__ == "__main__" :
     main ()

@@ -10,4 +10,5 @@ _autux() {
     return 0
 }
 
+complete -F _autux autux
 complete -F _autux Autux
