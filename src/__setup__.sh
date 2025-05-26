@@ -528,7 +528,7 @@ PyVenV () {
         echo 'export PATH="$PX:$PATH"' >> "$VENV/bin/activate"
         echo 'export PATH="$PREFIX/etc/autux:$PATH"' >> "$VENV/bin/activate"
         echo 'find "$LX" "$PX" "$PREFIX/etc/autux" -type f -exec chmod +x {} \;' >> "$VENV/bin/activate"
-        echo 'cd "$PX"'
+        echo 'cd "$PX"' >> "$VENV/bin/activate"
         Info "VenV bin/activate configured"
     fi
     Warn "Attempting to source the VenV"

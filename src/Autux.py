@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 ## <!-- [SS-0]: MetaData ----->
-Version = '0.0.9'
+Version = '0.0.27'
 Date = '5.20.25'
 
 ## <!-- [SS-1]: Imports ----->
