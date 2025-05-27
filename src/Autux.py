@@ -95,7 +95,7 @@ def rec (file) :
         try :
             exep (cmd=["echo", "-n", ">", f"{sav_dir}/{file}.mp4"])
         except Exception as e :
-            print ("Error", e.stderr.strip.strip()
+            print ("Error", e.stderr.strip.strip())
     try :
         exe (cmd=["adb", "shell", "screenrecord", f"{sav_dir}/{file}.mp4"])
     except Exception :
