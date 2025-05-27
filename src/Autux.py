@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 ## <!-- [SS-0]: MetaData ----->
-Version = '0.0.29'
-Date = '5.20.25'
+Version = '0.0.31'
+Date = '5.27.25'
 
 ## <!-- [SS-1]: Imports ----->
 import time
@@ -37,40 +37,118 @@ def exep (cmd) :
         print ("Error: ", e.stderr.strip())
 
 def tap (x, y) :
-    exe (cmd=["adb", "shell", "input", "tap", str(x), str(y)])
+    try :
+        exe (cmd=["adb", "shell", "input", "tap", str(x), str(y)])
+    except Exception :
+        try :
+            exep (cmd=["adb", "shell", "input", "tap", str(x), str(y)])
+        except Exception as e :
+            print ("Error", e.stderr.strip())
 
 def swipe (x1, y1, x2, y2, duration) :
-    exe (cmd=["adb", "shell", "input", "swipe", str(x1), str(y1), str(x2), str(y2), str(duration)])
+    try :
+        exe (cmd=["adb", "shell", "input", "swipe", str(x1), str(y1), str(x2), str(y2), str(duration)])
+    except Exception :
+        try :
+            exep (cmd=["adb", "shell", "input", "swipe", str(x1), str(y1), str(x2), str(y2), str(duration)])
+        except Exception as e :
+            print ("Error", e.stderr.srtip())
 
 def txt (x) :
-    exe (cmd=["adb", "shell", "input", "text", x.replace(" ", "%s")])
+    try :
+        exe (cmd=["adb", "shell", "input", "text", x.replace(" ", "%s")])
+    except Exception :
+        try :
+            exep (cmd=["adb", "shell", "input", "text", x.replace(" ", "%s")])
+        except Exception as e :
+            print ("Error", e.stderr.strip.strip())
 
 def notify (title, content) :
-    exe (cmd=["termux-notification", "--title", title, "--content", content])
+    try :
+        exe (cmd=["termux-notification", "--title", title, "--content", content])
+    except Exception :
+        try :
+            exep (cmd=["termux-notification", "--title", title, "--content", content])
+        except Exception as e :
+            print ("Error", e.stderr.strip.strip())
 
 def scr (file) :
-    exe (cmd=["echo", "-n", ">", f"{sav_dir}/{file}.png"])
-    exep (cmd=["adb", "shell", "screencap", f"{sav_dir}/{file}.png"])
-
+    try :
+        exe (cmd=["echo", "-n", ">", f"{sav_dir}/{file}.png"])
+    except Exception :
+        try :
+            exep (cmd=["echo", "-n", ">", f"{sav_dir}/{file}.png"])
+        except Exception as e :
+            print ("Error", e.stderr.strip())
+    try :
+        exe (cmd=["adb", "shell", "screencap", f"{sav_dir}/{file}.png"])
+    except Exception :
+        try :
+            exep (cmd=["adb", "shell", "screencap", f"{sav_dir}/{file}.png"])
+        except Exception as e :
+            print ("Error", e.stderr.strip())
+            
 def rec (file) :
-    exe (cmd=["echo", "-n", ">", f"{sav_dir}/{file}.mp4"])
-    exep (cmd=["adb", "shell", "screenrecord", f"{sav_dir}/{file}.mp4"])
+    try :
+        exe (cmd=["echo", "-n", ">", f"{sav_dir}/{file}.mp4"])
+    except Exception :
+        try :
+            exep (cmd=["echo", "-n", ">", f"{sav_dir}/{file}.mp4"])
+        except Exception as e :
+            print ("Error", e.stderr.strip.strip()
+    try :
+        exe (cmd=["adb", "shell", "screenrecord", f"{sav_dir}/{file}.mp4"])
+    except Exception :
+        try :
+            exep (cmd=["adb", "shell", "screenrecord", f"{sav_dir}/{file}.mp4"])
+        except Exception as e :
+            print ("Error", e.stderr.strip.strip())
 
 def norec () :
-    exe (cmd=["adb", "shell", "pkill", "-l", "INT", "screenrecord"])
+    try :
+        exe (cmd=["adb", "shell", "pkill", "-l", "INT", "screenrecord"])
+    except Exception :
+        try :
+            exep (cmd=["adb", "shell", "pkill", "-l", "INT", "screenrecord"])
+        except Exception as e :
+            print ("Error", e.stderr.strip.strip())
 
 def app (pkg) :
-    exe (cmd=["adb", "shell", "monkey", "-p", f"com.{pkg}", "-c", "android.intent.category.LAUNCHER", "1"])
+    try :
+        exe (cmd=["adb", "shell", "monkey", "-p", f"com.{pkg}", "-c", "android.intent.category.LAUNCHER", "1"])
+    except Exception :
+        try :
+            exep (cmd=["adb", "shell", "monkey", "-p", f"com.{pkg}", "-c", "android.intent.category.LAUNCHER", "1"])
+        except Exception as e :
+            print ("Error", e.stderr.strip.strip())
 
 def noapp (pkg) :
-    exe (cmd=["adb", "shell", "am", "force-stop", f"com.{pkg}"])
+    try :
+        exe (cmd=["adb", "shell", "am", "force-stop", f"com.{pkg}"])
+    except Exception :
+        try :
+            exep (cmd=["adb", "shell", "am", "force-stop", f"com.{pkg}"])
+        except Exception as e :
+            print ("Error", e.stderr.strip.strip())
 
 def listcom () :
-    exep (cmd=["adb", "shell", "pm", "list", "packages"])
+    try :
+        exe (cmd=["adb", "shell", "pm", "list", "packages"])
+    except Exception :
+        try :
+            exep (cmd=["adb", "shell", "pm", "list", "packages"])
+        except Exception as e :
+            print ("Error", e.stderr.strip.strip())
 
 ## <!-- [SS-5]: Main Functions ----->
 def start_screenrecord (output_file) :
-    exe (cmd=["echo", "-n", ">", f"{sav_dir}/{output_file}"])
+    try :
+        exe (cmd=["echo", "-n", ">", f"{sav_dir}/{output_file}"])
+    except Exception :
+        try :
+            exep (cmd=["echo", "-n", ">", f"{sav_dir}/{output_file}"])
+        except Exception as e :
+            print ("Error", e.stderr.strip.strip())
     return subprocess.Popen(["adb", "shell", "screenrecord", f"{sav_dir}/{output_file}"])
 
 def record_taps (label=None, hold_threshold=0.5) :
