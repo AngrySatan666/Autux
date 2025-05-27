@@ -66,7 +66,7 @@ def noapp (pkg) :
     exe (cmd=["adb", "shell", "am", "force-stop", f"com.{pkg}"])
 
 def listcom () :
-    exe (cmd=["adb", "shell", "pm", "list", "packages"])
+    exep (cmd=["adb", "shell", "pm", "list", "packages"])
 
 ## <!-- [SS-5]: Main Functions ----->
 def start_screenrecord (output_file) :
