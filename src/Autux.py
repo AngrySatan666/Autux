@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 ## <!-- [SS-0]: MetaData ----->
-Version = '0.0.31'
+Version = '0.0.32'
 Date = '5.27.25'
 
 ## <!-- [SS-1]: Imports ----->
@@ -228,7 +228,7 @@ def main () :
     parser.add_argument("--noapp", metavar="PKG", help="Force-stop app by package name")
     parser.add_argument("--record-taps", action="store_true", help="Start tap/screen recording session")
     parser.add_argument("--label", metavar="LABEL", help="Optional label for record-taps")
-    parser.add_argument("--listcom", help="List all installed apps to the console")
+    parser.add_argument("--listcom", action="store_true", help="List all installed apps to the console")
     args = parser.parse_args()
     if args.tap:
         tap(*args.tap)
