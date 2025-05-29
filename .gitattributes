@@ -8,7 +8,7 @@
 #		"SS-6" : Enforce LF for Shell Scripts 					(126)
 #		"SS-7" : Set Diff rulings 								(199)
 #		"SS-8" : Set Charset enforcements 						(279)
-#	}  
+#	}
 
 # <!-- [SS-1]: Auto text files for LF normalization ----->		(13)
 * text=auto
@@ -75,23 +75,23 @@
 *.py text eol=lf
 *.pyi text eol=lf
 *.pym text eol=lf
-*.pyo text eol=lf 
+*.pyo text eol=lf
 *.pyw text eol=lf
-*.pyx text eol=lf  
+*.pyx text eol=lf
 *.pxd text eol=lf
 *.pyz text eol=lf
 *.whl text eol=lf
 
-# <!-- [SS-4]: Ignore differences in exe permissions ----->		(85)  
+# <!-- [SS-4]: Ignore differences in exe permissions ----->		(85)
 *.apk binary
-*.bat binary 
+*.bat binary
 *.bin binary
 *.cmd binary
 *.db binary
 *.deb binary
 *.dll binary
 *.exe binary
-*.msi binary  
+*.msi binary
 *.ps1 binary
 *.rpm binary
 *.run binary
@@ -100,27 +100,27 @@
 *.so binary
 
 # <!-- [SS-5]: Binary Temporary files ----->					(102)
-	# [SS-5.1]: Temporary Bash/Shell Files  
-*.bash_history binary  
-*.log text  
+	# [SS-5.1]: Temporary Bash/Shell Files
+*.bash_history binary
+*.log text
 *.sh~ binary
 *.shell binary
 
-	# [SS-5.2]: Temporary Windows Batch Files  
+	# [SS-5.2]: Temporary Windows Batch Files
 *.bat~ binary
-*.cmd~ binary  
+*.cmd~ binary
 *.log text
 
-	# [SS-5.3]: Temporary PowerShell Files  
-*.log text  
-*.ps1~ binary 
+	# [SS-5.3]: Temporary PowerShell Files
+*.log text
+*.ps1~ binary
 *.psd1 binary
-*.psm1 binary 
+*.psm1 binary
 
-	# [SS-5.4]: Temporary Python Files  
-*.log text  
+	# [SS-5.4]: Temporary Python Files
+*.log text
 *.pyc binary
-*.pyo binary 
+*.pyo binary
 __pycache__/ binary
 
 # <!-- [SS-6]: Enforce LF line-ending shell scripts ----->		(126)
@@ -131,7 +131,7 @@ __pycache__/ binary
 *.cfg text eol=lf
 *.clj text eol=lf
 *.cljs text eol=lf
-*.cmd text eol=crlf 
+*.cmd text eol=crlf
 *.con text eol=lf
 *.conf text eol=lf
 *.config text eol=lf
@@ -284,7 +284,7 @@ __pycache__/ binary
 *.cfg text charset=utf-8
 *.clj text charset=utf-8
 *.cljs text charset=utf-8
-*.cmd text charset=utf-8 
+*.cmd text charset=utf-8
 *.con text charset=utf-8
 *.conf text charset=utf-8
 *.config text charset=utf-8
@@ -322,18 +322,18 @@ __pycache__/ binary
 *.ml text charset=utf-8
 *.mli text charset=utf-8
 *.nim text charset=utf-8
-*.pep text charset=utf-8  
+*.pep text charset=utf-8
 *.php text charset=utf-8
 *.pl text charset=utf-8
 *.pm text charset=utf-8
 *.ps1 text charset=utf-8
 *.psd1 text charset=utf-8
 *.psm1 text charset=utf-8
-*.py text charset=utf-8 
+*.py text charset=utf-8
 *.pyi text charset=utf-8
 *.pym text charset=utf-8
-*.pyw text charset=utf-8 
-*.pyx text charset=utf-8 
+*.pyw text charset=utf-8
+*.pyx text charset=utf-8
 *.pxd text charset=utf-8
 *.r text charset=utf-8
 *.rb text charset=utf-8

@@ -31,6 +31,10 @@
         "bashFolder": "/data/data/com.termux/files/home/storage/shared/Termux/bash",
         "pyFolder": "/data/data/com.termux/files/home/storage/shared/Termux/py"
     },
+    "perms": {
+        "granted": [],
+        "failed": []
+    },
     "VenV": {
         "path": "/data/data/com.termux/files/home/storage/shared/Termux/VenV",
         "depend": [

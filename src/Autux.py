@@ -8,72 +8,154 @@ Date = '5.20.25'
 import time
 import argparse
 import subprocess
-import os, re
+import os
+import re
 from datetime import datetime
 
 ## <!-- [SS-3]: Variable Setting ----->
-global VENV, FPy, FBash, PX, LX, _dir, sav_dir
 VENV = os.environ.get("VENV")
 FPy = os.environ.get("FPy")
 FBash = os.environ.get("FBash")
 PX = os.environ.get("PX")
 LX = os.environ.get("LX")
+adbsh = os.environ.get("adbsh", "None")
 _dir = os.path.dirname(os.path.abspath("__file__"))
-print (_dir)
-sav_dir = (f"{PX}")
+fld = _dir.split(os.sep)
+if "data/data/com.termux" in fld :
+    sav_dir = f"{PX}"
+elif "sdcard" in fld :
+    sav_dir = f"{FPy}"
+else :
+    sav_dir = ""
 
 # <!-- [SS-4]: Helper Functions ---->
+def check_adb() :
+    """Check if ADB is installed and accessible."""
+    test = subprocess.run(["adb", "version"], check=True, capture_output=True, text=True)
+    if "Android" not in test.stdout.splitlines()[0] :
+        print("[WARN]: ADB is not installed")
+        print("[WARN]: Installing")
+        subprocess.run(["pkg", "install", "android-tools", "-y"], check=True)
+    if adbsh == "None" :
+        try:
+            result = subprocess.run(["adb", "devices"], capture_output=True, text=True, check=True)
+            if "device" in result.stdout.splitlines()[-1] :
+                os.environ["adbsh"] = "1"
+                print("ADB Sees the Device")
+            else:
+                os.environ["adbsh"] = "0"
+                print("[WARN]: ADB DOES NOT SEE THE DEVICE")
+                print ("[WARN]: Attempting to Locally Repair ADB")
+                subprocess.run(["adb", "kill-server"], check=True)
+                subprocess.run(["adb", "disconnect"], check=True)
+                subprocess.run(["adb", ""], check=True)
+        except subprocess.CalledProcessError:
+            os.environ["adbsh"] = "0"
+
 def exe (cmd) :
+    """Execute a shell command and print the output.
+
+    Args:
+        cmd (list): The command to execute as a list of strings.
+    """
     try:
-        result = subprocess.run(cmd, capture=True, text=True, check=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         print ("Output: ", result.stdout.strip())
     except subprocess.CalledProcessError as e :
         print ("Error: ", e.stderr.strip())
 
-def exep (cmd) :
-    try:
-        result = subprocess.run(cmd)
-    except subprocess.CalledProcessError as e :
-        print ("Error: ", e.stderr.strip())
-
 def tap (x, y) :
+    """Simulate a tap on the device screen at the specified coordinates."""
     exe (cmd=["adb", "shell", "input", "tap", str(x), str(y)])
 
 def swipe (x1, y1, x2, y2, duration) :
+    """Simulate a swipe gesture on the device screen from one point to another."""
     exe (cmd=["adb", "shell", "input", "swipe", str(x1), str(y1), str(x2), str(y2), str(duration)])
 
 def txt (x) :
+    """Simulate text input on the device.
+    This function sends the specified text to the device's input system.
+
+    Args:
+        x (str): The text to input.
+    """
     exe (cmd=["adb", "shell", "input", "text", x.replace(" ", "%s")])
 
 def notify (title, content) :
+    """Send a notification to the Termux app.
+
+    Args:
+        title (str): The title of the notification.
+        content (str): The content of the notification.
+    """
     exe (cmd=["termux-notification", "--title", title, "--content", content])
 
 def scr (file) :
+    """Capture a screenshot of the device screen.
+    This function saves the screenshot to the specified file in the /sdcard directory.
+    The file will be saved in PNG format.
+
+    Args:
+        file (str): The name of the file to save the screenshot.
+    """
     exe (cmd=["echo", "-n", ">", f"{sav_dir}/{file}.png"])
-    exep (cmd=["adb", "shell", "screencap", f"{sav_dir}/{file}.png"])
+    exe (cmd=["adb", "shell", "screencap", f"{sav_dir}/{file}.png"])
 
 def rec (file) :
+    """Start screen recording on the device.
+
+    Args:
+        file (str): The name of the file to save the screen recording.
+    """
     exe (cmd=["echo", "-n", ">", f"{sav_dir}/{file}.mp4"])
-    exep (cmd=["adb", "shell", "screenrecord", f"{sav_dir}/{file}.mp4"])
+    exe (cmd=["adb", "shell", "screenrecord", f"{sav_dir}/{file}.mp4"])
 
 def norec () :
+    """Stop screen recording on the device.
+    """
     exe (cmd=["adb", "shell", "pkill", "-l", "INT", "screenrecord"])
 
 def app (pkg) :
+    """Launch an app on the device by its package name.
+    This function uses the Android Debug Bridge (ADB) to start the specified app.
+    The package name should be in the format "com.example.app".
+
+    Args:
+        pkg (str): The package name of the app to launch.
+    """
     exe (cmd=["adb", "shell", "monkey", "-p", f"com.{pkg}", "-c", "android.intent.category.LAUNCHER", "1"])
 
 def noapp (pkg) :
+    """Stop an app on the device by its package name.
+
+    Args:
+        pkg (str): The package name of the app to stop.
+    """
     exe (cmd=["adb", "shell", "am", "force-stop", f"com.{pkg}"])
 
 def listcom () :
+    """List all installed apps on the device.
+    """
     exe (cmd=["adb", "shell", "pm", "list", "packages"])
 
 ## <!-- [SS-5]: Main Functions ----->
 def start_screenrecord (output_file) :
+    """Start screen recording on the device.
+    Args:
+        output_file (str): The name of the output file.
+    Returns:
+        subprocess.Popen: The process object for the screen recording.
+    """
     exe (cmd=["echo", "-n", ">", f"{sav_dir}/{output_file}"])
     return subprocess.Popen(["adb", "shell", "screenrecord", f"{sav_dir}/{output_file}"])
 
 def record_taps (label=None, hold_threshold=0.5) :
+    """
+    Record tap gestures on the device screen and save them to a log file and video file.
+    Args:
+        label (str, optional): The label for the log files. Defaults to None.
+        hold_threshold (float, optional): The duration (in seconds) to consider a tap as a hold. Defaults to 0.5.
+    """
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     base_name = os.path.join(sav_dir, label) if label else sav_dir
     log_file = f"{base_name}tap_log{timestamp}.txt"
@@ -84,7 +166,7 @@ def record_taps (label=None, hold_threshold=0.5) :
     pattern_x = re.compile(r'ABS_MT_POSITION_X\s+(\w+)')
     pattern_y = re.compile(r'ABS_MT_POSITION_Y\s+(\w+)')
     screen_proc = start_screenrecord (video_file)
-    with open(log_file, "w") as f :
+    with open(log_file, "w", encoding="utf-8") as f :
         proc = subprocess.Popen(["adb", "shell","getevent", "-lt"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         x = y = None
         gesture_points = []
@@ -138,6 +220,9 @@ def record_taps (label=None, hold_threshold=0.5) :
 
 ## <!-- [SS-6]: Runnit ----->
 def main () :
+    """
+    Main function to parse command line arguments and execute corresponding ADB commands.
+    """
     parser = argparse.ArgumentParser(description="Autux - ADB Automation Toolkit for Termux")
     parser.add_argument ("--tap", nargs=2, metavar=("X", "Y"), type=int, help="Tap at Screen Co-Ordinates")
     parser.add_argument ("--swipe", nargs=5, metavar=("X1", "Y1", "X2", "Y2", "DURATION"), type=int,help="Swipe from one point to another")
@@ -178,4 +263,5 @@ def main () :
         record_taps(label=None)
 
 if __name__ == "__main__" :
+    check_adb()
     main ()
