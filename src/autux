@@ -5,7 +5,7 @@ _autux() {
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="--tap --swipe --txt --notify --scr --rec --norec --app --noapp --record-taps --label"
+    opts="--tap --swipe --txt --notify --scr --rec --norec --app --noapp --record-taps --label --listcom"
     COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
     return 0
 }
