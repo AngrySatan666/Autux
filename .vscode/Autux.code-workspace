@@ -229,7 +229,8 @@
         },
         "python-envs.defaultEnvManager": "ms-python.python:system",
         "python.analysis.logLevel": "Trace",
-        "python.defaultInterpreterPath": "c:\\Program Files\\Python312\\python.exe"
+        "python.defaultInterpreterPath": "c:\\Program Files\\Python312\\python.exe",
+        "cSpell.ignoreWords": []
     },
     "extensions": {
         "recommendations": [

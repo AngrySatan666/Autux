@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 
+"""Autux - ADB Automation Toolkit for Termux
+This script provides a set of tools to automate interactions with an Android device using ADB (Android Debug Bridge).
+It allows users to perform actions such as tapping, swiping, sending text input, taking screenshots, recording the screen, launching apps, and more.
+It is designed to be run in a Termux environment on Android devices.
+"""
 ## <!-- [SS-0]: MetaData ----->
-Version = '0.0.57'
-Date = '5.27.25'
+Version = '0.0.59'
+Date = '5.29.25'
 
 ## <!-- [SS-1]: Imports ----->
 import time
@@ -20,15 +25,27 @@ PX = os.environ.get("PX")
 LX = os.environ.get("LX")
 adbsh = os.environ.get("adbsh", "None")
 _dir = os.path.dirname(os.path.abspath("__file__"))
-fld = _dir.split(os.sep)
-if "data/data/com.termux" in fld :
-    sav_dir = f"{PX}"
-elif "sdcard" in fld :
-    sav_dir = f"{FPy}"
-else :
-    sav_dir = ""
+sav_dir = None
 
 # <!-- [SS-4]: Helper Functions ---->
+def DIR (x=None) :
+    """Set the save directory based on the current working directory.
+    """
+    if x is None :
+        if "data/data/com.termux" in _dir :
+            sav_dir = f"{PX}"
+        elif "sdcard" in _dir :
+            sav_dir = f"{FPy}"
+        else :
+            sav_dir = ""
+    if x == "LX" :
+        sav_dir = f"{LX}"
+    if x == "PX" :
+        sav_dir = f"{PX}"
+    if x == "dir" :
+        sav_dir = f"{_dir}"
+    return sav_dir
+
 def check_adb() :
     """Check if ADB is installed and accessible."""
     test = subprocess.run(["adb", "version"], check=True, capture_output=True, text=True)
