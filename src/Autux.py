@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 ## <!-- [SS-0]: MetaData ----->
-Version = '0.0.32'
+Version = '0.0.57'
 Date = '5.27.25'
 
 ## <!-- [SS-1]: Imports ----->
@@ -54,7 +54,6 @@ def check_adb() :
 
 def exe (cmd) :
     """Execute a shell command and print the output.
-
     Args:
         cmd (list): The command to execute as a list of strings.
     """
@@ -75,7 +74,6 @@ def swipe (x1, y1, x2, y2, duration) :
 def txt (x) :
     """Simulate text input on the device.
     This function sends the specified text to the device's input system.
-
     Args:
         x (str): The text to input.
     """
@@ -83,7 +81,6 @@ def txt (x) :
 
 def notify (title, content) :
     """Send a notification to the Termux app.
-
     Args:
         title (str): The title of the notification.
         content (str): The content of the notification.
@@ -94,7 +91,6 @@ def scr (file) :
     """Capture a screenshot of the device screen.
     This function saves the screenshot to the specified file in the /sdcard directory.
     The file will be saved in PNG format.
-
     Args:
         file (str): The name of the file to save the screenshot.
     """
@@ -103,7 +99,6 @@ def scr (file) :
 
 def rec (file) :
     """Start screen recording on the device.
-
     Args:
         file (str): The name of the file to save the screen recording.
     """
@@ -119,26 +114,24 @@ def app (pkg) :
     """Launch an app on the device by its package name.
     This function uses the Android Debug Bridge (ADB) to start the specified app.
     The package name should be in the format "com.example.app".
-
     Args:
         pkg (str): The package name of the app to launch.
     """
-    exe (cmd=["adb", "shell", "monkey", "-p", f"com.{pkg}", "-c", "android.intent.category.LAUNCHER", "1"])
+    exe (cmd=["adb", "shell", "monkey", "-p", f"{pkg}", "1"])
 
 def noapp (pkg) :
     """Stop an app on the device by its package name.
-
     Args:
         pkg (str): The package name of the app to stop.
     """
-    exe (cmd=["adb", "shell", "am", "force-stop", f"com.{pkg}"])
+    exe (cmd=["adb", "shell", "am", "force-stop", f"{pkg}"])
 
 def listcom () :
     """List all installed apps on the device.
     """
     exe (cmd=["adb", "shell", "pm", "list", "packages"])
 
-## <!-- [SS-5]: Main Functions ----->
+## <!-- [SS-5]: Major Functions ----->
 def start_screenrecord (output_file) :
     """Start screen recording on the device.
     Args:

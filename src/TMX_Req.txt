@@ -4,4 +4,3 @@ ranger
 jq
 rclone
 bash-completion
-termux-api
