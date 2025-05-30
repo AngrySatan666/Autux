@@ -733,27 +733,17 @@ Permiss () {
         else
             Warn "USB Debugging is OFF"
         fi
-    else
-        Warn "getprop not available; cannot check USB debugging."
     fi
     # Check Wireless debugging (ADB over TCP/IP)
     if command -v getprop >/dev/null 2>&1; then
-        ADB_TCP_PORT=$(getprop service.adb.tcp.port)
         if [ "$ADB_TCP_PORT" = "5555" ]; then
             Info "Wireless Debugging (ADB over TCP/IP) is ON (port 5555)"
         else
             Warn "Wireless Debugging is OFF"
         fi
-    else
-        Warn "getprop not available; cannot check wireless debugging."
     fi
     if [ "$USB_DEBUG" = "on" ]; then
         if [ "$ADB_TCP_PORT" = "5555" ]; then
-            Info "Ensuring Wireless Debugging (ADB over TCP/IP) stays enabled on port 5555"
-            adb shell setprop service.adb.tcp.port 5555
-            adb shell stop adbd
-            adb shell start adbd
-            Info "Wireless Debugging should now remain enabled until reboot"
             Info "Granting Termux Extra Permissions"
             local all_success=1
             perms=(
@@ -885,8 +875,13 @@ Permiss () {
                 Warn "Some permissions could not be granted. Check the output above or settings.json for details."
             fi
         fi
-        SetCache "PERMISSIONS"
+        Info "Ensuring Wireless Debugging (ADB over TCP/IP) stays enabled on port 5555"
+        adb shell setprop service.adb.tcp.port 5555
+        adb shell stop adbd
+        adb shell start adbd
+        Info "Wireless Debugging should now remain enabled until reboot"
     fi
+    SetCache "PERMISSIONS"
 }
 
 Setup () {
