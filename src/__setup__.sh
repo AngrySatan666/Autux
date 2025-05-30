@@ -125,6 +125,7 @@ Exit () {
         if command -v adb >/dev/null 2>&1; then
             adb shell monkey -p com.termux 1 >/dev/null 2>&1
             kill -9 $$
+        fi
     else
         Warn "Exiting Termux"
         Timer 5
