@@ -533,7 +533,7 @@ Depends () {
                 echo -n > "$HOME/.local/share/ranger/history"
                 Info "History Config Created"
             fi
-            SetCache "Deps-RngHist"; then
+            SetCache "Deps-RngHist"
         fi
         if ! Cache "Deps-RngTag"; then
             if [ ! -f "$HOME/.local/share/ranger/tagged" ]; then
