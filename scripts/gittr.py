@@ -1,4 +1,4 @@
-import os
+import os, time
 import subprocess
 
 raw_dir = os.path.dirname(os.path.abspath(__file__))
@@ -8,3 +8,5 @@ add = subprocess.run(["git", "add", "."], cwd=_dir)
 commit = subprocess.run(["git", "commit", "-m", "fast"], cwd=_dir)
 push = subprocess.run(["git", "push"], capture_output=True, text=True, cwd=_dir)
 print(push.stdout.strip())
+
+time.sleep (15)
