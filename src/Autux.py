@@ -55,8 +55,8 @@ def check_adb() :
         subprocess.run(["pkg", "install", "android-tools", "-y"], check=True)
     if adbsh == "None" :
         try:
-            result = subprocess.run(["adb", "devices"], capture_output=True, text=True, check=True)
-            if "device" in result.stdout.splitlines()[-1] :
+            result = subprocess.run(["adb", "tcpip", "5555"], capture_output=True, text=True, check=True)
+            if "restarting" in result.stdout.splitlines()[0] :
                 os.environ["adbsh"] = "1"
                 print("ADB Sees the Device")
             else:

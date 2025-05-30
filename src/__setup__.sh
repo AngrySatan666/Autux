@@ -739,10 +739,12 @@ Permiss () {
     # Check Wireless debugging (ADB over TCP/IP)
     if command -v getprop >/dev/null 2>&1; then
         ADB_TCP_PORT=$(getprop service.adb.tcp.port)
+        : "${ADB_TCP_PORT:=}"
         if [ "$ADB_TCP_PORT" = "5555" ]; then
             Info "Wireless Debugging (ADB over TCP/IP) is ON (port 5555)"
         else
             Warn "Wireless Debugging is OFF"
+
         fi
     else
         Warn "getprop not available; cannot check wireless debugging."
@@ -751,14 +753,21 @@ Permiss () {
         if [ "$ADB_TCP_PORT" = "5555" ]; then
             Info "Granting Termux Extra Permissions"
             perms=(
+                READ_PHONE_STATE
+                READ_EXTERNAL_STORAGE
+                WRITE_EXTERNAL_STORAGE
+                WRITE_SECURE_SETTINGS
+                SYSTEM_ALERT_WINDOW
+                PACKAGE_USAGE_STATS
+
                 # Contacts/SMS/Phone
                 READ_CONTACTS WRITE_CONTACTS GET_ACCOUNTS
                 READ_SMS RECEIVE_SMS SEND_SMS WRITE_SMS
-                READ_PHONE_STATE CALL_PHONE ANSWER_PHONE_CALLS
+                CALL_PHONE ANSWER_PHONE_CALLS
                 PROCESS_OUTGOING_CALLS ADD_VOICEMAIL USE_SIP
                 RECEIVE_MMS RECEIVE_WAP_PUSH
                 # Storage/Files
-                READ_EXTERNAL_STORAGE WRITE_EXTERNAL_STORAGE MANAGE_EXTERNAL_STORAGE
+                 MANAGE_EXTERNAL_STORAGE
                 # Location
                 ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION ACCESS_BACKGROUND_LOCATION
                 # Camera/Microphone/Media
@@ -771,8 +780,8 @@ Permiss () {
                 CHANGE_NETWORK_STATE ACCESS_NETWORK_STATE
                 INTERNET
                 # System/Settings
-                WRITE_SETTINGS WRITE_SECURE_SETTINGS
-                SYSTEM_ALERT_WINDOW REQUEST_INSTALL_PACKAGES
+                WRITE_SETTINGS
+                REQUEST_INSTALL_PACKAGES
                 WAKE_LOCK
                 FOREGROUND_SERVICE
                 # Sensors/Hardware
