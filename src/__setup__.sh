@@ -288,7 +288,7 @@ Storage () {
             echo -n > "$PREFIX/share/doc/autux/TMX_Req.txt"
             cp "$SCR_DIR/TMX_Req.txt" "$PREFIX/share/doc/autux/TMX_Req.txt"
             echo -n > "$PREFIX/share/doc/autux/settings.json"
-            cp "$SCR/settings.json" "$PREFIX/share/doc/autux/settings.json"
+            cp "$SCR_DIR/settings.json" "$PREFIX/share/doc/autux/settings.json"
             SetCache "Dir-Docs"
             Info "Documentation created successfully."
         fi
