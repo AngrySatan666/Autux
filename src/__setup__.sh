@@ -2,16 +2,16 @@
 
 set -euo pipefail
 IFS=$'\n\t'
-Version='0.4.387'
-Date='5.25.25'
+Version='0.4.392'
+Date='5.29.25'
 
 # <!-- Global Variables ----->
 PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
 HOME="${HOME:-/data/data/com.termux/files/home}"
 export VENV="${HOME}/VenV"
 
-CACHE="${$HOME}/.cache"
-STATE="{$CACHE}/autux.state"
+CACHE="${HOME}/.cache"
+STATE="${CACHE}/autux.state"
 export SCR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # <!-- Snippet Functions ----->
@@ -91,18 +91,6 @@ Timer () {
     echo ""
 }
 
-End () {
-    local C="\033[96m"
-    local R="\033[0m"
-    echo ""
-    echo "================================================================================================================================================================================="
-    echo ""
-    echo -e "${C}__SETUP__ has finished${R}"
-    echo ""
-    Input "Press enter to exit and clear"
-    clear
-}
-
 PAK () {
     case "$1" in
         "tmx")
@@ -129,30 +117,60 @@ PAK () {
     esac
 }
 
+Exit () {
+    Info "REBOOT REQUIRED"
+    if Cache "PERMISSIONS"; then
+        Warn "Rebooting"
+        Timer 5
+        if command -v adb >/dev/null 2>&1; then
+            adb shell monkey -p com.termux 1 >/dev/null 2>&1
+            kill -9 $$
+    else
+        Warn "Exiting Termux"
+        Timer 5
+        kill -9 $$
+    fi
+}
+
+End () {
+    local C="\033[96m"
+    local R="\033[0m"
+    echo ""
+    echo "================================================================================================================================================================================="
+    echo ""
+    echo -e "${C}__SETUP__ has finished${R}"
+    echo ""
+    Exit
+}
+
 # <!-- Configure Cache ----->
 MakeCache () {
     if [ ! -f "$STATE" ]; then
-        mkdir -p "$CACHE"
-        echo -n > "$STATE"
+        mkdir -p "$CACHE" || { Error "Failed to create cache directory $CACHE"; Exit; }
+        echo -n > "$STATE" || { Error "Failed to create state file $STATE"; Exit; }
     fi
 }
 
 SetCache () {
-    echo "$1=done" >> "$STATE"
+    echo "$1=done" >> "$STATE" || Error "Failed to write to state file $STATE"
 }
 
 Cache () {
-    grep -q "^$1=done" "$CACHE_FILE" 2>/dev/null
+    grep -q "^$1=done" "$STATE" 2>/dev/null
 }
 
 # <!-- Configure Termux ----->
 Repo () {
-    cd $HOME
+    cd "$HOME" || { Error "Failed to cd to $HOME"; Exit; }
     if ! Cache "Repo-Set"; then
         if [ ! -L "$PREFIX/etc/termux/chosen_mirrors" ]; then
             Warn "Repo-Set Not Detected" "Executing..., You must manually choose your respective repo on the next screens"
             Timer 3
-            termux-change-repo
+            if ! command -v termux-change-repo >/dev/null 2>&1; then
+                Error "termux-change-repo not found"
+                Exit
+            fi
+            termux-change-repo || { Error "termux-change-repo failed"; Exit; }
             SetCache "Repo-Set"
             Info "Repo's Set"
         fi
@@ -193,69 +211,73 @@ Repo () {
 }
 
 Storage () {
-    if ! Cache "Dir-Access"
+    if ! Cache "Dir-Access"; then
         if [ ! -d "$HOME/storage" ]; then
             Warn "Termux storage permission not granted." "You must manually allow storage permissions on the next screen"
             Timer 5
-            termux-setup-storage
+            if ! command -v termux-setup-storage >/dev/null 2>&1; then
+                Error "termux-setup-storage not found"
+                Exit
+            fi
+            termux-setup-storage || { Error "termux-setup-storage failed"; Exit; }
             Timer 5
             if [ -d "$HOME/storage" ]; then
                 Info "Storage Access Detected" "Creating Termux Folder on Local Storage"
-                mkdir -p "$HOME/storage/shared/Termux/bash"
+                mkdir -p "$HOME/storage/shared/Termux/bash" || { Error "Failed to create bash folder"; Exit; }
                 FBash="$HOME/storage/shared/Termux/bash"
-                mkdir -p "$HOME/storage/shared/Termux/py"
+                mkdir -p "$HOME/storage/shared/Termux/py" || { Error "Failed to create py folder"; Exit; }
                 FPy="$HOME/storage/shared/Termux/py"
                 SetCache "Dir-Access"
                 Info "Folders and Variables Created"
-            elif [ ! -d "$HOME/storage" ]; then
+            else
                 Error "Storage Access not set Properly! Exiting"
                 Timer 5
                 Exit
             fi
-        elif [ -d "$HOME/storage" ]; then
+        else
             Info "Storage Access Detected" "Creating Termux Folder on Local Storage"
-            mkdir -p "$HOME/storage/shared/Termux/bash"
+            mkdir -p "$HOME/storage/shared/Termux/bash" || { Error "Failed to create bash folder"; Exit; }
             FBash="$HOME/storage/shared/Termux/bash"
-            mkdir -p "$HOME/storage/shared/Termux/py"
+            mkdir -p "$HOME/storage/shared/Termux/py" || { Error "Failed to create py folder"; Exit; }
             FPy="$HOME/storage/shared/Termux/py"
             SetCache "Dir-Access"
             Info "Folders and Variables Created"
         fi
     fi
-    if ! Cache "Dir-LocBin"
+    if ! Cache "Dir-LocBin"; then
         if [ ! -d "$HOME/.local/bin" ]; then
             Info "Creating HOME Executable Directory"
-            mkdir -p "$HOME/.local/bin"
-            mkdir -p "$HOME/.local/share"
+            mkdir -p "$HOME/.local/bin" || { Error "Failed to create .local/bin"; Exit; }
+            mkdir -p "$HOME/.local/share" || { Error "Failed to create .local/share"; Exit; }
             export PATH="$HOME/.local/bin:$PATH"
             SetCache "Dir-LocBin"
             Info "Directories Created"
         fi
     fi
-    if ! Cache "Dir-VenV"
+    if ! Cache "Dir-VenV"; then
         if [ ! -d "$VENV/scripts" ]; then
             Info "Creating the VenV/scripts Directory"
-            mkdir -p "$VENV/scripts"
+            mkdir -p "$VENV/scripts" || { Error "Failed to create VenV/scripts"; Exit; }
             VENV="$HOME/VenV"
             PX="$VENV/scripts"
             SetCache "Dir-VenV"
             Info "Folders and Variables Created"
         fi
     fi
-    if ! Cache "Dir-Cfg"
+    if ! Cache "Dir-Cfg"; then
         if [ ! -d "$HOME/.config/autux" ]; then
             Info "Creating settings.json"
-            mkdir -p "$HOME/.config/autux"
-            echo -n > "$HOME/.config/autux/settings.json"
+            mkdir -p "$HOME/.config/autux" || { Error "Failed to create config directory"; Exit; }
+            echo -n > "$HOME/.config/autux/settings.json" || { Error "Failed to create settings.json"; Exit; }
             cp -v "$SCR_DIR/settings.json" "$HOME/.config/autux/settings.json" || Error "Failed to copy $SCR_DIR/settings.json"
             SetCache "Dir-Cfg"
             Info "Settings Created"
         fi
     fi
-    if ! Cache "Dir-Docs"
+    if ! Cache "Dir-Docs"; then
         if [ ! -d "$PREFIX/share/doc/autux" ]; then
             Info "Creating documentation..."
-            mkdir -p "$PREFIX/share/doc/autux"
+            mkdir -p "$PREFIX/share/doc/autux" || { Error "Failed to create documentation directory"; Exit; }
             echo -n > "$PREFIX/share/doc/autux/LICENSE"
             echo -n > "$PREFIX/share/doc/autux/copyright"
             echo -n > "$PREFIX/share/doc/autux/README.md"
@@ -270,10 +292,10 @@ Storage () {
             Info "Documentation created successfully."
         fi
     fi
-    if ! Cache "Dir-Etc"
+    if ! Cache "Dir-Etc"; then
         if [ ! -d "$PREFIX/etc/autux" ]; then
             Info "Creating Service Script Source"
-            mkdir -p "$PREFIX/etc/autux"
+            mkdir -p "$PREFIX/etc/autux" || { Error "Failed to create service script source directory"; Exit; }
             echo -n > "$PREFIX/etc/autux/session"
             cp "$SCR_DIR/session.sh" "$PREFIX/etc/autux/session"
             echo -n > "$PREFIX/etc/autux/Autux"
@@ -294,33 +316,34 @@ Depends () {
     if ! Cache "Deps-Tmx"; then
         PAK "tmx"
         SetCache "Deps-Tmx"
+    fi
     Bash-Complete () {
         if ! Cache "Deps-BashCom"; then
             if ! pkg list-installed | grep -qe 'bash-completion'; then
                 Info "Installing Bash-Completion"
-                pkg install bash-completion -y
+                pkg install bash-completion -y || { Error "Failed to install bash-completion"; Exit; }
                 SetCache "Deps-ShCom"
                 Info "Installation Complete"
             fi
         fi
         if ! Cache "Deps-Bashrc"; then
             Info "Enabeling Bash-Completion with bash.bashrc"
-            echo "[ -f "$PREFIX/etc/bash_completion" ] && ./$PREFIX/etc/bash_completion" >> "$PREFIX/etc/bash.bashrc"
+            echo "[ -f \"$PREFIX/etc/bash_completion\" ] && . \"$PREFIX/etc/bash_completion\"" >> "$PREFIX/etc/bash.bashrc"
             SetCache "Deps-Bashrc"
             Info "bash.bashrc appended"
         fi
         if ! Cache "Deps-BashDir"; then
             if [ ! -d "$PREFIX/share/bash-completion/completions" ]; then
                 Warn "Completions Directory not found" "Creating"
-                mkdir -p "$PREFIX/share/bash-completion/completions"
+                mkdir -p "$PREFIX/share/bash-completion/completions" || { Error "Failed to create completions dir"; Exit; }
                 SetCache "Deps-BashDir"
                 Info "Completions Folder created"
             fi
         fi
         if ! Cache "Deps-ComBash"; then
-            if [ ! -f "$PREFIX/share/bash-competion/completions/autux" ]; then
+            if [ ! -f "$PREFIX/share/bash-completion/completions/autux" ]; then
                 Info "Creating Autux Completions in Completions Directory"
-                echo -n > "$PREFIX/share/bash-completion/completions/autux"
+                echo -n > "$PREFIX/share/bash-completion/completions/autux" || { Error "Failed to create autux completion"; Exit; }
                 cp -v "$SCR_DIR/autux" "$PREFIX/share/bash-completion/completions/autux" || Error "Failed to copy $SCR_DIR/autux"
                 SetCache "Deps-ComBash"
                 Info "Completions Set"
@@ -330,19 +353,19 @@ Depends () {
         SetCache "Deps-Bash"
     }
     Ranger () {
-        if ! Cache "Deps-Rng"
+        if ! Cache "Deps-Rng"; then
             if ! pkg list-installed | grep -qe 'ranger'; then
                 Warn "Ranger not installed" "Installing now"
-                pkg install ranger -y
+                pkg install ranger -y || { Error "Failed to install ranger"; Exit; }
                 SetCache "Deps-Rng"
                 Info "Ranger installed successfully"
             fi
         fi
-        if ! Cache "Deps-RngDir"
+        if ! Cache "Deps-RngDir"; then
             Info "Configuring Ranger"
             if [ ! -d "$HOME/.config/ranger" ]; then
                 Warn "Ranger config folder not found, creating it"
-                mkdir -p "$HOME/.config/ranger"
+                mkdir -p "$HOME/.config/ranger" || { Error "Failed to create ranger config dir"; Exit; }
                 SetCache "Deps-RngDir"
                 Info "Ranger config folder created"
             fi
@@ -351,12 +374,15 @@ Depends () {
             export rc_file="$HOME/.config/ranger/rc.conf"
             if [ ! -f "$rc_file" ]; then
                 Warn "Ranger Configs not found, Attempting to create rc.conf with ranger"
-                ranger --copy-config=rc
+                if command -v ranger >/dev/null 2>&1; then
+                    ranger --copy-config=rc || Warn "ranger --copy-config=rc failed"
+                fi
                 if [ -f "$rc_file" ]; then
                     Info "Ranger Configs Created Successfully"
                 else
                     Warn "ranger --copy-config=rc failed" "Manually creating rc.conf"
-                    echo "# Default Ranger configuration" > "$rc_file"
+                    echo "# Default Ranger configuration" > "$rc_file" || { Error "Failed to create rc.conf"; Exit; }
+                fi
             fi
             SetCache "Deps-RngConf"
         fi
@@ -364,17 +390,18 @@ Depends () {
             if [ -f "$rc_file" ]; then
                 local target_line1="set show_hidden false"
                 local new_line1="set show_hidden true"
-            if grep -q "^$target_line1" "$rc_file"; then
-                Info "Editing target line present in rc.conf"
-                sed -i "s/^$target_line1.*/$new_line1/" "$rc_file"
-            elif grep -q "^$new_line1" "$rc_file"; then
-                Info "Target line already present in rc.conf"
-            else
-                Info "Target line in rc.conf not found, adding it"
-                echo "$new_line1" >> "$rc_file"
-                Info "Added target line to existing rc.conf"
+                if grep -q "^$target_line1" "$rc_file"; then
+                    Info "Editing target line present in rc.conf"
+                    sed -i "s/^$target_line1.*/$new_line1/" "$rc_file"
+                elif grep -q "^$new_line1" "$rc_file"; then
+                    Info "Target line already present in rc.conf"
+                else
+                    Info "Target line in rc.conf not found, adding it"
+                    echo "$new_line1" >> "$rc_file"
+                    Info "Added target line to existing rc.conf"
+                fi
+                SetCache "Deps-RSet"
             fi
-            SetCache "Deps-RSet"
         fi
         if ! Cache "Deps-RSet2"; then
             local target_line2="set viewmode miller"
@@ -397,7 +424,7 @@ Depends () {
             fi
             SetCache "Deps-RSet2"
         fi
-        if ! Cachce "Deps-RSet4"
+        if ! Cache "Deps-RSet4"; then
             local target_line4="set confirm_on_delete multiple"
             local new_line4="set confirm_on_delete always"
             if grep -q "^$target_line4" "$rc_file"; then
@@ -475,7 +502,7 @@ Depends () {
         if ! Cache "Deps-RngShare"; then
             if [ ! -d "$HOME/.local/share/ranger" ]; then
                 Warn "Rangers Local configs folder not found" "Manually Creating Ranger Configs file"
-                mkdir -p "$HOME/.local/share/ranger"
+                mkdir -p "$HOME/.local/share/ranger" || { Error "Failed to create ranger local share dir"; Exit; }
                 Info "Ranger Local Configs folder created"
             fi
             SetCache "Deps-RngShare"
@@ -515,7 +542,7 @@ Depends () {
             fi
             SetCache "Deps-RngTag"
         fi
-        if ! Cache "Deps-RGlobal"
+        if ! Cache "Deps-RGlobal"; then
             if ! grep -q "RANGER_LOAD_DEFAULT_RC" "$PREFIX/etc/bash.bashrc"; then
                 echo 'export RANGER_LOAD_DEFAULT_RC=FALSE' >> "$PREFIX/etc/bash.bashrc"
                 Info "Set RANGER_LOAD_DEFAULT_RC=FALSE in bash.bashrc"
@@ -548,8 +575,8 @@ Bash () {
         Info "Setting Autux Configs..."
         echo '## Autux Configs ##' >> "$PREFIX/etc/bash.bashrc"
         echo 'if command -v jq >/dev/null 2>&1; then' >> "$PREFIX/etc/bash.bashrc"
-        echo '    export FBash="$(jq -r '.Storage.bashFolder' "$HOME/.config/autux/settings.json")"' >> "$PREFIX/etc/bash.bashrc"
-        echo '    export FPy="$(jq -r '.Storage.pyFolder' "$HOME/.config/autux/settings.json")"' >> "$PREFIX/etc/bash.bashrc"
+        echo '    export FBash="$(jq -r ''.Storage.bashFolder'' "$HOME/.config/autux/settings.json")"' >> "$PREFIX/etc/bash.bashrc"
+        echo '    export FPy="$(jq -r ''.Storage.pyFolder'' "$HOME/.config/autux/settings.json")"' >> "$PREFIX/etc/bash.bashrc"
         echo 'else' >> "$PREFIX/etc/bash.bashrc"
         echo '    export FBash="$(grep -oP '"'"'bashFolder":\s*"\K[^"]+'"'"' "$HOME/.config/autux/settings.json")"' >> "$PREFIX/etc/bash.bashrc"
         echo '    export FPy="$(grep -oP '"'"'pyFolder":\s*"\K[^"]+'"'"' "$HOME/.config/autux/settings.json")"' >> "$PREFIX/etc/bash.bashrc"
@@ -606,7 +633,7 @@ PyVenV () {
             if ! python3 -V >/dev/null 2>&1; then
                 if ! pkg list-packages | grep -q 'python3'; then
                     Warn "Python Not Installed" "Installing"
-                    pkg install python -y
+                    pkg install python -y || { Error "Failed to install python"; Exit; }
                     Info "Python Installed"
                 fi
             fi
@@ -618,7 +645,7 @@ PyVenV () {
             Info "Python venv folder exists"
         elif [ ! -d "$VENV" ]; then
             Info "Creating Python venv folder"
-            mkdir -p "$VENV/scripts"
+            mkdir -p "$VENV/scripts" || { Error "Failed to create venv/scripts"; Exit; }
             export PATH="$VENV/scripts:$PATH"
             Info "Folder made and exported to PATH"
         fi
@@ -627,7 +654,7 @@ PyVenV () {
     if ! Cache "PyV-Bin"; then
         if [ ! -f "$VENV/bin/activate" ]; then
             Info "Attempting to create the VenV at $VENV"
-            python3 -m venv "$VENV" --prompt "VenV"
+            python3 -m venv "$VENV" --prompt "VenV" || { Error "Failed to create venv"; Exit; }
             Info "PyVenV Built"
         fi
         SetCache "PyV-Bin"
@@ -637,9 +664,11 @@ PyVenV () {
             Info "Activating to update PIP"
             set +u
             source "$VENV/bin/activate"
-            python3 -m pip install --upgrade pip wheel setuptools
+            python3 -m pip install --upgrade pip wheel setuptools || { Error "Failed to upgrade pip/wheel/setuptools"; Exit; }
             Info "PIP SETUPTOOLS & WHEEL Updated"
+            set -u
         fi
+        SetCache "PyV-Act"
     fi
     if ! Cache "PyV-Req"; then
         Warn "Installing Deps"
@@ -649,42 +678,48 @@ PyVenV () {
     fi
     if ! Cache "PyV-Site"; then
         Info "Editing PyVenV Site-Packages"
-        PYVER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+        PYVER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>/dev/null || echo "")
         if [ -n "$PYVER" ]; then
-            mkdir -p "$VENV/lib/python$PYVER/site-packages"
+            mkdir -p "$VENV/lib/python$PYVER/site-packages" || { Error "Failed to create site-packages"; Exit; }
             echo -n > "$VENV/lib/python$PYVER/site-packages/sitecustomize.py"
-            cp "$SCR_DIR/sitecustomize.py" "$VENV/lib/python$PYVER/site-packages/sitecustomize.py"
+            cp "$SCR_DIR/sitecustomize.py" "$VENV/lib/python$PYVER/site-packages/sitecustomize.py" || Error "Failed to copy sitecustomize.py"
         fi
         SetCache "PyV-Site"
         Info "PyVenV Site-Packages edited"
+    fi
     if ! Cache "PyV-BinRX"; then
         if [ -f "$VENV/bin/activate" ]; then
             Info "Editing PyVenV bin"
-            echo ' ' >> "$VENV/bin/activate"
-            echo '## Autux Configs ##' >> "$VENV/bin/activate"
-            echo 'if command -v jq >/dev/null 2>&1; then' >> "$VENV/bin/activate"
-            echo '    export FBash="$(jq -r ''.Storage.bashFolder'' "$HOME/.config/autux/settings.json")"' >> "$VENV/bin/activate"
-            echo '    export FPy="$(jq -r ''.Storage.pyFolder'' "$HOME/.config/autux/settings.json")"' >> "$VENV/bin/activate"
-            echo 'else' >> "$VENV/bin/activate"
-            echo '    export FBash="$(grep -oP '"'"'bashFolder":\s*"\K[^"]+'"'"' "$HOME/.config/autux/settings.json")"' >> "$VENV/bin/activate"
-            echo '    export FPy="$(grep -oP '"'"'pyFolder":\s*"\K[^"]+'"'"' "$HOME/.config/autux/settings.json")"' >> "$VENV/bin/activate"
-            echo 'fi' >> "$VENV/bin/activate"
-            echo 'export LX="$HOME/.local/bin"' >> "$VENV/bin/activate"
-            echo 'export PX="$HOME/VenV/scripts"' >> "$VENV/bin/activate"
-            echo 'export VENV="$HOME/VenV"' >> "$VENV/bin/activate"
-            echo 'cp -av "$FPy" "$PX"' >> "$VENV/bin/activate"
-            echo 'cp -av "$FBash" "$LX"' >> "$VENV/bin/activate"
-            echo 'export PATH="$LX:$PATH"' >> "$VENV/bin/activate"
-            echo 'export PATH="$PX:$PATH"' >> "$VENV/bin/activate"
-            echo 'export PATH="$PREFIX/etc/autux:$PATH"' >> "$VENV/bin/activate"
-            echo 'find "$LX" "$PX" "$PREFIX/etc/autux" -type f -exec chmod +x {} \;' >> "$VENV/bin/activate"
-            echo 'cd "$PX"' >> "$VENV/bin/activate"
+            {
+                echo ' '
+                echo '## Autux Configs ##'
+                echo 'if command -v jq >/dev/null 2>&1; then'
+                echo '    export FBash="$(jq -r ''.Storage.bashFolder'' "$HOME/.config/autux/settings.json")"'
+                echo '    export FPy="$(jq -r ''.Storage.pyFolder'' "$HOME/.config/autux/settings.json")"'
+                echo 'else'
+                echo '    export FBash="$(grep -oP '"'"'bashFolder":\s*"\K[^"]+'"'"' "$HOME/.config/autux/settings.json")"'
+                echo '    export FPy="$(grep -oP '"'"'pyFolder":\s*"\K[^"]+'"'"' "$HOME/.config/autux/settings.json")"'
+                echo 'fi'
+                echo 'export LX="$HOME/.local/bin"'
+                echo 'export PX="$HOME/VenV/scripts"'
+                echo 'export VENV="$HOME/VenV"'
+                echo 'cp -av "$FPy" "$PX"'
+                echo 'cp -av "$FBash" "$LX"'
+                echo 'export PATH="$LX:$PATH"'
+                echo 'export PATH="$PX:$PATH"'
+                echo 'export PATH="$PREFIX/etc/autux:$PATH"'
+                echo 'find "$LX" "$PX" "$PREFIX/etc/autux" -type f -exec chmod +x {} \;'
+                echo 'cd "$PX"'
+            } >> "$VENV/bin/activate" || Error "Failed to append to venv activate"
             Info "VenV bin/activate configured"
         fi
         SetCache "PyV-BinRX"
+    fi
     set +u
-    source "$VENV/bin/activate"
-    Info "VenV Activation Set Successfully"
+    if [ -f "$VENV/bin/activate" ]; then
+        source "$VENV/bin/activate"
+        Info "VenV Activation Set Successfully"
+    fi
     set -u
 }
 
@@ -849,6 +884,7 @@ Permiss () {
                 Warn "Some permissions could not be granted. Check the output above or settings.json for details."
             fi
         fi
+        SetCache "PERMISSIONS"
     fi
 }
 
