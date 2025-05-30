@@ -592,6 +592,7 @@ Bash () {
         echo 'export PATH="$PREFIX/etc/autux:$PATH"' >> "$PREFIX/etc/bash.bashrc"
         echo 'find "$LX" "$PX" "$PREFIX/etc/autux" -type f -exec chmod +x {} \;' >> "$PREFIX/etc/bash.bashrc"
         echo 'export adbsh="None"' >> "$PREFIX/etc/bash.bashrc"
+        echo 'alias ls="ls -a"'
         echo 'Welcome to Autux!' > "$PREFIX/etc/motd"
         [ -f "$HOME/.lesshst" ] && rm -f "$HOME/.lesshst"
         : > "$HOME/.bash_history"

@@ -270,8 +270,9 @@ def main () :
     if args.listcom:
         listcom()
     if not any(vars(args).values()):
-        record_taps(label=None)
+        record_taps()
 
 if __name__ == "__main__" :
+    DIR(x="dir")
     check_adb()
     main ()
