@@ -17,7 +17,7 @@ import os
 import re
 from datetime import datetime
 
-## <!-- [SS-3]: Variable Setting ----->
+## <!-- [SS-2]: Variable Setting ----->
 VENV = os.environ.get("VENV")
 FPy = os.environ.get("FPy")
 FBash = os.environ.get("FBash")
@@ -27,7 +27,7 @@ adbsh = os.environ.get("adbsh", "None")
 _dir = os.path.dirname(os.path.abspath("__file__"))
 sav_dir = None
 
-# <!-- [SS-4]: Helper Functions ---->
+## <!-- [SS-3]: Helper Functions ---->
 def DIR (x=None) :
     """Set the save directory based on the current working directory.
     """
@@ -80,13 +80,23 @@ def exe (cmd) :
     except subprocess.CalledProcessError as e :
         print ("Error: ", e.stderr.strip())
 
+## <!-- [SS-4]: Autux Functions ----->
 def tap (x, y) :
     """Simulate a tap on the device screen at the specified coordinates."""
     exe (cmd=["adb", "shell", "input", "tap", str(x), str(y)])
 
+def hold (x, y, d) :
+    """Simulate a hold gesture on the device screen at the specified coordinates for a given duration.
+    Args:
+        x (int): The x-coordinate of the tap location.
+        y (int): The y-coordinate of the tap location.
+        d (int): The duration to hold the tap in milliseconds.
+    """
+    exe (cmd=["adb", "shell", "input", "touchscreen", "swipe", str(x), str(y), str(x), str(y), str(d)])
+
 def swipe (x1, y1, x2, y2, duration) :
     """Simulate a swipe gesture on the device screen from one point to another."""
-    exe (cmd=["adb", "shell", "input", "swipe", str(x1), str(y1), str(x2), str(y2), str(duration)])
+    exe (cmd=["adb", "shell", "input", "touchscreen", "swipe", str(x1), str(y1), str(x2), str(y2), str(duration)])
 
 def txt (x) :
     """Simulate text input on the device.
@@ -274,5 +284,4 @@ def main () :
 
 if __name__ == "__main__" :
     DIR(x="dir")
-    check_adb()
     main ()

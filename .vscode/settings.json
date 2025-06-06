@@ -278,7 +278,6 @@
 
   // _MARKDOWN VIEWING / ABILITY \\
     // MarkDown-Lint \\
-    "markdownlint.focusMode": true,
     "markdownlint.config": {
         "no-inline-html": false
     },
