@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
+# <!-- Metadata ----->
+Version='0.1.3'
+Date='5.29.25'
+Dev='AngrySatan666'
+
 set -euo pipefail
 IFS=$'\n\t'
-Version='0.4.392'
-Date='5.29.25'
 
 # <!-- Global Variables ----->
 PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"

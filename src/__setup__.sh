@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
+# <!-- Metadata ----->
+Version='0.5.588'
+Date='6.10.25'
+Dev='AngrySatan666'
+
 set -euo pipefail
 IFS=$'\n\t'
-Version='0.4.392'
-Date='5.29.25'
 
 # <!-- Global Variables ----->
 PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
@@ -301,8 +304,6 @@ Storage () {
             cp "$SCR_DIR/session.sh" "$PREFIX/etc/autux/session"
             echo -n > "$PREFIX/etc/autux/Autux"
             cp "$SCR_DIR/Autux.py" "$PREFIX/etc/autux/Autux"
-            echo -n > "$PREFIX/etc/autux/sitecustomize.py"
-            cp "$SCR_DIR/sitecustomize.py" "$PREFIX/etc/autux/sitecustomize.py"
             Info "Service Dir & Files Created"
             echo -n > "$PREFIX/etc/autux/__setup__"
             cp "$SCR_DIR/__setup__.sh" "$PREFIX/etc/autux/__setup__"
@@ -677,17 +678,6 @@ PyVenV () {
         PAK "pip"
         Info "Python venv created and dependencies installed."
         SetCache "PyV-Req"
-    fi
-    if ! Cache "PyV-Site"; then
-        Info "Editing PyVenV Site-Packages"
-        PYVER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>/dev/null || echo "")
-        if [ -n "$PYVER" ]; then
-            mkdir -p "$VENV/lib/python$PYVER/site-packages" || { Error "Failed to create site-packages"; Exit; }
-            echo -n > "$VENV/lib/python$PYVER/site-packages/sitecustomize.py"
-            cp "$SCR_DIR/sitecustomize.py" "$VENV/lib/python$PYVER/site-packages/sitecustomize.py" || Error "Failed to copy sitecustomize.py"
-        fi
-        SetCache "PyV-Site"
-        Info "PyVenV Site-Packages edited"
     fi
     if ! Cache "PyV-BinRX"; then
         if [ -f "$VENV/bin/activate" ]; then
