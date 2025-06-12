@@ -1,33 +1,42 @@
-#!/data/data/com.termux/files/usr/bin/bash
-set -euo pipefail
-IFS=$'\n\t'
-BUGS=True
+#!/usr/bin/env bash
 
-# <!-- [SS-0]: Metadata ----->
-Version='0.1.3'
-Date='6.11.25'
+# <!-- Metadata ----->
+Version='0.5.588'
+Date='6.10.25'
 Dev='AngrySatan666'
 
-# <!-- [SS-1]: Global Variables ----->
-# /1.1/ Standard
-: "${PREFIX:=/data/data/com.termux/files/usr}"
-: "${HOME:=/data/data/com.termux/files/home}"
-: "${TMPDIR:=$PREFIX/tmp}"
+set -euo pipefail
+IFS=$'\n\t'
 
-# /1.2/ Autux Spec
-: "${VENV:=$HOME/VenV}"
-: "${CACHE:=$HOME/.cache/autux}"
-: "${STATE:=$CACHE/build.state}"
+# <!-- Global Variables ----->
+PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
+HOME="${HOME:-/data/data/com.termux/files/home}"
+export VENV="${HOME}/VenV"
 
-# /1.3/ Routing
-: "${SRC_DIR:="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"}"
+CACHE="${HOME}/.cache"
+STATE="${CACHE}/autux.state"
+export SCR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# <!-- [SS-2]: SnippeType Functions ----->
-# /2.1/ Console Debug
-Error () {
-    local C="\033[91m"
+# <!-- Snippet Functions ----->
+Start () {
+    local C="\033[96m"
+    local Cx="\033[94m"
     local R="\033[0m"
+    clear
+    echo "" && echo ""
+    echo -e "${C}Version: $Version   Date: $Date${R}"
+    sleep 2
+    echo "================================================================================================================================================================================="
+    echo ""
+    echo -e "${Cx}[INFO] __SETUP__ Starting...${R}"
+    echo ""
+    sleep 2
+}
+
+Error () {
     for txt in "$@"; do
+        local C="\033[91m"
+        local R="\033[0m"
         echo -e "${C}[ERROR] $txt${R}"
         echo ""
         sleep 1
@@ -35,30 +44,25 @@ Error () {
 }
 
 Warn () {
-    local C="\033[33m"
-    local R="\033[0m"
-    if [ "$BUGS" = "true" ]; then
-        for txt in "$@"; do
-            echo -e "${C}[WARN] $txt${R}"
-            echo ""
-            sleep 1
-        done
-    fi
+    for txt in "$@"; do
+        local C="\033[33m"
+        local R="\033[0m"
+        echo -e "${C}[WARN] $txt${R}"
+        echo ""
+        sleep 1
+    done
 }
 
 Info () {
-    local C="\033[92m"
-    local R="\033[0m"
-    if [ "$BUGS" = "true" ]; then
-        for txt in "$@"; do
-            echo -e "${C}[INFO] $txt${R}"
-            echo ""
-            sleep 1
-        done
-    fi
+    for txt in "$@"; do
+        local C="\033[94m"
+        local R="\033[0m"
+        echo -e "${C}[INFO] $txt${R}"
+        echo ""
+        sleep 1
+    done
 }
 
-# /2.2/ Console Control
 Input () {
     if [[ -n "${answer_count:-}" ]]; then
         for ((i = 1; i <= answer_count; i++)); do
@@ -94,59 +98,42 @@ PAK () {
     case "$1" in
         "tmx")
             Info "Installing Termux packages from TMX_Req.txt..."
-            if [[ -f "$SRC_DIR/TMX_Req.txt" ]]; then
-                grep -vE '^\s*#|^\s*$' "$SRC_DIR/TMX_Req.txt" | sed 's/[[:space:]]*$//' | xargs -r pkg install -y
+            if [[ -f "$SCR_DIR/TMX_Req.txt" ]]; then
+                grep -vE '^\s*#|^\s*$' "$SCR_DIR/TMX_Req.txt" | sed 's/[[:space:]]*$//' | xargs -r pkg install -y
                 pkg update && pkg upgrade -y
                 Info "Termux packages installed successfully."
             else
-                Error "TMX_Req.txt not found in $SRC_DIR."
+                Error "TMX_Req.txt not found in $SCR_DIR."
             fi
             ;;
         "pip")
             Info "Installing Python packages from PIP_Req.txt..."
-            if [[ -f "$SRC_DIR/PIP_Req.txt" ]]; then
-                grep -vE '^\s*#|^\s*$' "$SRC_DIR/PIP_Req.txt" | sed 's/[[:space:]]*$//' | xargs -r pip install
+            if [[ -f "$SCR_DIR/PIP_Req.txt" ]]; then
+                grep -vE '^\s*#|^\s*$' "$SCR_DIR/PIP_Req.txt" | sed 's/[[:space:]]*$//' | xargs -r pip install
                 Info "Python packages installed successfully."
             else
-                Error "PIP_Req.txt not found in $SRC_DIR."
+                Error "PIP_Req.txt not found in $SCR_DIR."
             fi
             ;;
         *)
             Warn "Unknown package type '$1'"
-            ;;
     esac
 }
 
-# /2.3/ Cache Config
-SetCache () {
-    echo "$1" >> "$STATE" || Error "Failed to write to state file $STATE"
-}
-
-Cache () {
-    grep -q "^$1" "$STATE" 2>/dev/null
-}
-
-# /2.4/ Scripting
-Start () {
-    local C="\033[96m"
-    local Cx="\033[94m"
-    local R="\033[0m"
-    clear
-    echo "" && echo ""
-    echo -e "${C}Version: $Version   Date: $Date${R}"
-    sleep 2
-    echo "================================================================================================================================================================================="
-    echo ""
-    echo -e "${Cx}[INFO] __SETUP__ Starting...${R}"
-    echo ""
-    sleep 2
-}
-
 Exit () {
-    Warn "REBOOT REQUIRED"
-    Warn "Exiting Termux"
-    Timer 5
-    kill -9 $$
+    Info "REBOOT REQUIRED"
+    if Cache "PERMISSIONS"; then
+        Warn "Rebooting"
+        Timer 5
+        if command -v adb >/dev/null 2>&1; then
+            adb shell monkey -p com.termux 1 >/dev/null 2>&1
+            kill -9 $$
+        fi
+    else
+        Warn "Exiting Termux"
+        Timer 5
+        kill -9 $$
+    fi
 }
 
 End () {
@@ -160,30 +147,43 @@ End () {
     Exit
 }
 
-# <!-- [SS-3]: Directory & Repo ----->
-# /3.1/ Repo Select
+# <!-- Configure Cache ----->
+MakeCache () {
+    if [ ! -f "$STATE" ]; then
+        mkdir -p "$CACHE" || { Error "Failed to create cache directory $CACHE"; Exit; }
+        echo -n > "$STATE" || { Error "Failed to create state file $STATE"; Exit; }
+    fi
+}
+
+SetCache () {
+    echo "$1=done" >> "$STATE" || Error "Failed to write to state file $STATE"
+}
+
+Cache () {
+    grep -q "^$1=done" "$STATE" 2>/dev/null
+}
+
+# <!-- Configure Termux ----->
 Repo () {
-  # /3.1.1/ Check for Repo Selection
-    cd "$HOME" || { Error "Failed to cd to $HOME"; exit 1; }
+    cd "$HOME" || { Error "Failed to cd to $HOME"; Exit; }
     if ! Cache "Repo-Set"; then
         if [ ! -L "$PREFIX/etc/termux/chosen_mirrors" ]; then
             Warn "Repo-Set Not Detected" "Executing..., You must manually choose your respective repo on the next screens"
             Timer 3
             if ! command -v termux-change-repo >/dev/null 2>&1; then
                 Error "termux-change-repo not found"
-                exit 1
+                Exit
             fi
-            termux-change-repo || { Error "termux-change-repo failed"; exit 1; }
+            termux-change-repo || { Error "termux-change-repo failed"; Exit; }
             SetCache "Repo-Set"
             Info "Repo's Set"
         fi
     fi
-  # /3.1.2/ Check for Repo Extras
     if ! Cache "Repo-Extras"; then
         if ! Cache "RepExt-x11"; then
             if ! pkg list-installed | grep -q 'x11-repo'; then
                 Warn "Extra-Repo 'x11' Not Set, Installing..."
-                pkg install -y x11-repo || { Error "Failed to install x11-repo"; exit 1; }
+                pkg install -y x11-repo
                 SetCache "RepExt-x11"
                 Info "x11 Repo Installed"
             fi
@@ -192,159 +192,117 @@ Repo () {
     fi
     if ! Cache "Repo-Up"; then
         Info "Updating All Packages"
-        pkg update && pkg upgrade -y || { Error "Failed to update packages"; exit 1; }
+        pkg update && pkg upgrade -y
         SetCache "Repo-Up"
         Info "Repo Selected and Packages Updated"
     fi
 }
 
-# /3.2/ Storage Dir
 Storage () {
-  # /3.2.1/ Cache
-    if [ ! -f "$STATE" ]; then
-        mkdir -p "$CACHE" || { Error "Failed to Create Cache Directory '$HOME/.cache/autux'"; exit 1; }
-        echo -n > "$STATE" || { Error "Failed to Create State File '$STATE'"; exit 1; }
-    fi
-    SetCache "Cache Created "
-
-  # /3.2.1/ Docs
-    if ! Cache "Dir-Docs"; then
-        if [ ! -d "$PREFIX/share/doc/autux" ]; then
-            Info "Creating documentation..."
-            mkdir -p "$PREFIX/share/doc/autux" || { Error "Failed to Create Documentation Directory"; exit 1; }
-            echo -n > "$PREFIX/share/doc/autux/LICENSE" || { Error "Failed to Create File doc/LICENSE"; exit 1; }
-            echo -n > "$PREFIX/share/doc/autux/copyright" || { Error "Failed to Create File doc/copyright"; exit 1; }
-            echo -n > "$PREFIX/share/doc/autux/README.md" || { Error "Failed to Create File doc/README.md"; exit 1; }
-            cp -av "$SRC_DIR/doc/." "$PREFIX/share/doc/autux/" || { Error "Failed to copy $SRC_DIR/doc"; exit 1; }
-            echo -n > "$PREFIX/share/doc/autux/PIP_Req.txt" || { Error "Failed to Create File doc/PIP_Req.txt"; exit 1; }
-            cp "$SRC_DIR/PIP_Req.txt" "$PREFIX/share/doc/autux/PIP_Req.txt" || { Error "Failed to copy $SRC_DIR/PIP_Req.txt"; exit 1; }
-            echo -n > "$PREFIX/share/doc/autux/TMX_Req.txt" || { Error "Failed to Create File doc/TMX_Req.txt"; exit 1; }
-            cp "$SRC_DIR/TMX_Req.txt" "$PREFIX/share/doc/autux/TMX_Req.txt" || { Error "Failed to copy $SRC_DIR/TMX_Req.txt"; exit 1; }
-        fi
-        SetCache "Dir-Docs"
-        Info "Documentation created successfully."
-    fi
-
-  # /3.2.2/ Local Bin
-    if ! Cache "Dir-LocBin"; then
-        if [ ! -d "$HOME/.local/bin" ]; then
-            Info "Creating HOME Executable Directory"
-            mkdir -p "$HOME/.local/bin" || { Error "Failed to Create .local/bin"; exit 1; }
-            mkdir -p "$HOME/.local/share" || { Error "Failed to Create .local/share"; exit 1; }
-            export PATH="$HOME/.local/bin:$PATH" || { Error "Failed to Update PATH"; exit 1; }
-            LX="$HOME/.local/bin"
-        fi
-        SetCache "Dir-LocBin"
-        Info "Directories Created"
-    fi
-
-  # /3.2.3/ VenV
-    if ! Cache "Dir-VenV"; then
-        if [ ! -d "$VENV/scripts" ]; then
-            Info "Creating the VenV/scripts Directory"
-            mkdir -p "$VENV/scripts" || { Error "Failed to Create VenV/scripts"; exit 1; }
-            PX="$VENV/scripts" || { Error "Failed to Export PX to PATH"; exit 1; }
-        fi
-        SetCache "Dir-VenV"
-        Info "Folders and Variables Created"
-    fi
-
-  # /3.2.4/ PATH Bin
-    if ! Cache "Dir-Bin"; then
-        Info "Creating Binaries"
-        if ! Cache "Dir-Bin-Session"; then
-            if [ ! -f "$PREFIX/bin/session" ]; then
-                echo -n > "$PREFIX/bin/session" || { Error "Failed to Create File bin/session"; exit 1; }
-                cp "$SRC_DIR/session.sh" "$PREFIX/bin/session" || { Error "Failed to copy $SRC_DIR/session.sh"; exit 1; }
-            fi
-            SetCache "Dir-Bin-Session"
-            Info "Session.sh Saved to Bin"
-        fi
-        if ! Cache "Dir-Bin-Autux"; then
-            if [ ! -f "$PREFIX/bin/autux" ]; then
-                echo -n > "$PREFIX/bin/autux" || { Error "Failed to Create File bin/autux"; exit 1; }
-                cp "$SRC_DIR/autux.py" "$PREFIX/bin/autux" || { Error "Failed to copy $SRC_DIR/autux.py"; exit 1; }
-            fi
-            SetCache "Dir-Bin-Autux"
-            Info "Autux.py Saved to Bin"
-        fi
-        if ! Cache "Dir-Bin-Setup"; then
-            if [ ! -f "$PREFIX/bin/__setup__" ]; then
-                echo -n > "$PREFIX/bin/__setup__" || { Error "Failed to Create File bin/__setup__"; exit 1; }
-                cp "$SRC_DIR/__setup__.sh" "$PREFIX/bin/__setup__" || { Error "Failed to copy $SRC_DIR/__setup__.sh"; exit 1; }
-            fi
-            SetCache "Dir-Bin-Setup"
-            Info "__setup__.sh Saved to Bin"
-        fi
-        if ! Cache "Dir-Bin-Permiss"; then
-            if [ ! -f "$PREFIX/bin/__permiss__" ]; then
-                echo -n > "$PREFIX/bin/__permiss__" || { Error "Failed to Create File bin/__permiss__"; exit 1; }
-                cp "$SRC_DIR/__permiss__.sh" "$PREFIX/bin/__permiss__" || { Error "Failed to copy $SRC_DIR/__permiss__.sh"; exit 1; }
-            fi
-            SetCache "Dir-Bin-Permiss"
-            Info "__permiss__.sh Saved to Bin"
-        fi
-
-  # /3.2.5/ Etc
-        if ! Cache "Dir-Etc"; then
-            if [ ! -d "$PREFIX/etc/autux" ]; then
-                mkdir -p "$PREFIX/etc/autux" || { Error "Failed to create $PREFIX/etc/autux"; exit 1; }
-            fi
-            if [ ! -f "$PREFIX/etc/autux/autux.conf" ]; then
-                echo -n > "$PREFIX/etc/autux/autux.conf" || { Error "Failed to Create File etc/autux/autux.conf"; exit 1; }
-                cp "$SRC_DIR/autux.conf" "$PREFIX/etc/autux/autux.conf" || { Error "Failed to copy $SRC_DIR/autux.conf"; exit 1; }
-            fi
-        fi
-        Info "Service Dir & Files Created"
-        SetCache "Dir-Etc"
-    fi
-
-  # /3.2.6/ Storage Access
     if ! Cache "Dir-Access"; then
         if [ ! -d "$HOME/storage" ]; then
             Warn "Termux storage permission not granted." "You must manually allow storage permissions on the next screen"
             Timer 5
             if ! command -v termux-setup-storage >/dev/null 2>&1; then
                 Error "termux-setup-storage not found"
-                exit 1
+                Exit
             fi
-            termux-setup-storage || { Error "termux-setup-storage failed"; exit 1; }
+            termux-setup-storage || { Error "termux-setup-storage failed"; Exit; }
             Timer 5
             if [ -d "$HOME/storage" ]; then
                 Info "Storage Access Detected" "Creating Termux Folder on Local Storage"
-                mkdir -p "$HOME/storage/shared/Termux/bash" || { Error "Failed to create bash folder"; exit 1; }
+                mkdir -p "$HOME/storage/shared/Termux/bash" || { Error "Failed to create bash folder"; Exit; }
                 FBash="$HOME/storage/shared/Termux/bash"
-                mkdir -p "$HOME/storage/shared/Termux/py" || { Error "Failed to create py folder"; exit 1; }
+                mkdir -p "$HOME/storage/shared/Termux/py" || { Error "Failed to create py folder"; Exit; }
                 FPy="$HOME/storage/shared/Termux/py"
                 SetCache "Dir-Access"
                 Info "Folders and Variables Created"
             else
                 Error "Storage Access not set Properly! Exiting"
                 Timer 5
-                exit 1
+                Exit
             fi
         else
             Info "Storage Access Detected" "Creating Termux Folder on Local Storage"
-            mkdir -p "$HOME/storage/shared/Termux/bash" || { Error "Failed to create bash folder"; exit 1; }
+            mkdir -p "$HOME/storage/shared/Termux/bash" || { Error "Failed to create bash folder"; Exit; }
             FBash="$HOME/storage/shared/Termux/bash"
-            mkdir -p "$HOME/storage/shared/Termux/py" || { Error "Failed to create py folder"; exit 1; }
+            mkdir -p "$HOME/storage/shared/Termux/py" || { Error "Failed to create py folder"; Exit; }
             FPy="$HOME/storage/shared/Termux/py"
             SetCache "Dir-Access"
             Info "Folders and Variables Created"
         fi
     fi
+    if ! Cache "Dir-LocBin"; then
+        if [ ! -d "$HOME/.local/bin" ]; then
+            Info "Creating HOME Executable Directory"
+            mkdir -p "$HOME/.local/bin" || { Error "Failed to create .local/bin"; Exit; }
+            mkdir -p "$HOME/.local/share" || { Error "Failed to create .local/share"; Exit; }
+            export PATH="$HOME/.local/bin:$PATH"
+            SetCache "Dir-LocBin"
+            Info "Directories Created"
+        fi
+    fi
+    if ! Cache "Dir-VenV"; then
+        if [ ! -d "$VENV/scripts" ]; then
+            Info "Creating the VenV/scripts Directory"
+            mkdir -p "$VENV/scripts" || { Error "Failed to create VenV/scripts"; Exit; }
+            VENV="$HOME/VenV"
+            PX="$VENV/scripts"
+            SetCache "Dir-VenV"
+            Info "Folders and Variables Created"
+        fi
+    fi
+    if ! Cache "Dir-Cfg"; then
+        if [ ! -d "$HOME/.config/autux" ]; then
+            Info "Creating settings.json"
+            mkdir -p "$HOME/.config/autux" || { Error "Failed to create config directory"; Exit; }
+            echo -n > "$HOME/.config/autux/settings.json" || { Error "Failed to create settings.json"; Exit; }
+            cp -v "$SCR_DIR/settings.json" "$HOME/.config/autux/settings.json" || Error "Failed to copy $SCR_DIR/settings.json"
+            SetCache "Dir-Cfg"
+            Info "Settings Created"
+        fi
+    fi
+    if ! Cache "Dir-Docs"; then
+        if [ ! -d "$PREFIX/share/doc/autux" ]; then
+            Info "Creating documentation..."
+            mkdir -p "$PREFIX/share/doc/autux" || { Error "Failed to create documentation directory"; Exit; }
+            echo -n > "$PREFIX/share/doc/autux/LICENSE"
+            echo -n > "$PREFIX/share/doc/autux/copyright"
+            echo -n > "$PREFIX/share/doc/autux/README.md"
+            cp -av "$SCR_DIR/doc/." "$PREFIX/share/doc/autux/" || Error "Failed to copy $SCR_DIR/doc/."
+            echo -n > "$PREFIX/share/doc/autux/PIP_Req.txt"
+            cp "$SCR_DIR/PIP_Req.txt" "$PREFIX/share/doc/autux/PIP_Req.txt"
+            echo -n > "$PREFIX/share/doc/autux/TMX_Req.txt"
+            cp "$SCR_DIR/TMX_Req.txt" "$PREFIX/share/doc/autux/TMX_Req.txt"
+            echo -n > "$PREFIX/share/doc/autux/settings.json"
+            cp "$SCR_DIR/settings.json" "$PREFIX/share/doc/autux/settings.json"
+            SetCache "Dir-Docs"
+            Info "Documentation created successfully."
+        fi
+    fi
+    if ! Cache "Dir-Etc"; then
+        if [ ! -d "$PREFIX/etc/autux" ]; then
+            Info "Creating Service Script Source"
+            mkdir -p "$PREFIX/etc/autux" || { Error "Failed to create service script source directory"; Exit; }
+            echo -n > "$PREFIX/etc/autux/session"
+            cp "$SCR_DIR/session.sh" "$PREFIX/etc/autux/session"
+            echo -n > "$PREFIX/etc/autux/autux"
+            cp "$SCR_DIR/autux.py" "$PREFIX/etc/autux/autux"
+            Info "Service Dir & Files Created"
+            echo -n > "$PREFIX/etc/autux/__setup__"
+            cp "$SCR_DIR/__setup__.sh" "$PREFIX/etc/autux/__setup__"
+            SetCache "Dir-Etc"
+        fi
+    fi
+    Info "Basic Storage Setup and Configuration Complete"
 }
 
-# <!-- [SS-4]: Dependency Install ----->
-# /4.1/ Termux Deps
+# <!-- Install Packages ----->
 Depends () {
-  # /4.1.1/ Install Termux Packages
     if ! Cache "Deps-Tmx"; then
         PAK "tmx"
         SetCache "Deps-Tmx"
     fi
-
-  # /4.1.2/ Check Bash-Completion
     Bash-Complete () {
         if ! Cache "Deps-BashCom"; then
             if ! pkg list-installed | grep -qe 'bash-completion'; then
@@ -354,16 +312,12 @@ Depends () {
                 Info "Installation Complete"
             fi
         fi
-
-  # /4.1.3/ Enable Bash-Completion
         if ! Cache "Deps-Bashrc"; then
             Info "Enabeling Bash-Completion with bash.bashrc"
             echo "[ -f \"$PREFIX/etc/bash_completion\" ] && . \"$PREFIX/etc/bash_completion\"" >> "$PREFIX/etc/bash.bashrc"
             SetCache "Deps-Bashrc"
             Info "bash.bashrc appended"
         fi
-
-  # /4.1.4/ Check Bash-Completion Directory
         if ! Cache "Deps-BashDir"; then
             if [ ! -d "$PREFIX/share/bash-completion/completions" ]; then
                 Warn "Completions Directory not found" "Creating"
@@ -372,7 +326,6 @@ Depends () {
                 Info "Completions Folder created"
             fi
         fi
-  # /4.1.5/ Autux Bash-Completion
         if ! Cache "Deps-ComBash"; then
             if [ ! -f "$PREFIX/share/bash-completion/completions/autux" ]; then
                 Info "Creating Autux Completions in Completions Directory"
@@ -385,10 +338,7 @@ Depends () {
         Info "Bash-Completion Configured"
         SetCache "Deps-Bash"
     }
-
-# /4.2/ Ranger Deps
     Ranger () {
-  # /4.2.1/ Check Ranger
         if ! Cache "Deps-Rng"; then
             if ! pkg list-installed | grep -qe 'ranger'; then
                 Warn "Ranger not installed" "Installing now"
@@ -397,7 +347,6 @@ Depends () {
                 Info "Ranger installed successfully"
             fi
         fi
-  # /4.2.2/ Ranger Configs Directory
         if ! Cache "Deps-RngDir"; then
             Info "Configuring Ranger"
             if [ ! -d "$HOME/.config/ranger" ]; then
@@ -407,7 +356,6 @@ Depends () {
                 Info "Ranger config folder created"
             fi
         fi
-  # /4.2.3/ Check Ranger Config File
         if ! Cache "Deps-RngConf"; then
             export rc_file="$HOME/.config/ranger/rc.conf"
             if [ ! -f "$rc_file" ]; then
@@ -424,8 +372,6 @@ Depends () {
             fi
             SetCache "Deps-RngConf"
         fi
-
-  # /4.2.4/ Set Ranger Configs Show Hidden
         if ! Cache "Deps-RSet"; then
             if [ -f "$rc_file" ]; then
                 local target_line1="set show_hidden false"
@@ -443,8 +389,6 @@ Depends () {
                 SetCache "Deps-RSet"
             fi
         fi
-
-  # /4.2.6/ Set Ranger Configs Viewmode
         if ! Cache "Deps-RSet2"; then
             local target_line2="set viewmode miller"
             local new_line2="# set viewmode miller"
@@ -466,8 +410,6 @@ Depends () {
             fi
             SetCache "Deps-RSet2"
         fi
-
-  # /4.2.7/ Set Ranger Configs Confirm on Delete
         if ! Cache "Deps-RSet4"; then
             local target_line4="set confirm_on_delete multiple"
             local new_line4="set confirm_on_delete always"
@@ -483,8 +425,6 @@ Depends () {
             fi
             SetCache "Deps-RSet4"
         fi
-
-  # /4.2.8/ Set Ranger Configs Draw Borders
         if ! Cache "Deps-RSet5"; then
             local target_line5="set draw_borders none"
             local new_line5="set draw_borders both"
@@ -500,8 +440,6 @@ Depends () {
             fi
             SetCache "Deps-RSet5"
         fi
-
-  # /4.2.9/ Set Ranger Configs Autoupdate Cumulative Size
         if ! Cache "Deps-RSet6"; then
             local target_line6="set autoupdate_cumulative_size false"
             local new_line6="set autoupdate_cumulative_size true"
@@ -517,8 +455,6 @@ Depends () {
             fi
             SetCache "Deps-RSet6"
         fi
-
-  # /4.2.10/ Set Ranger Configs Wrap Scroll
         if ! Cache "Deps-RSet7"; then
             local target_line7="set wrap_scroll false"
             local new_line7="set wrap_scroll true"
@@ -534,8 +470,6 @@ Depends () {
             fi
             SetCache "Deps-RSet7"
         fi
-
-  # /4.2.11/ Set Ranger Configs Colorscheme
         if ! Cache "Deps-RSet8"; then
             local target_line8="set colorscheme default"
             local new_line8="set colorscheme snow"
@@ -551,8 +485,6 @@ Depends () {
             fi
             SetCache "Deps-RSet8"
         fi
-
-  # /4.2.12/ Set Ranger Configs Ranger/Share
         if ! Cache "Deps-RngShare"; then
             if [ ! -d "$HOME/.local/share/ranger" ]; then
                 Warn "Rangers Local configs folder not found" "Manually Creating Ranger Configs file"
@@ -561,8 +493,6 @@ Depends () {
             fi
             SetCache "Deps-RngShare"
         fi
-
-  # /4.2.13/ Set Ranger Configs Ranger/Bookmarks
         if ! Cache "Deps-RngBook"; then
             if [ ! -f "$HOME/.local/share/ranger/bookmarks" ]; then
                 Warn "bookmarks file not found"
@@ -572,8 +502,6 @@ Depends () {
             fi
             SetCache "Deps-RngBook"
         fi
-
-  # /4.2.14/ Set Ranger Configs Add Bookmarks
         if ! Cache "Deps-RngRead"; then
             if [ -f "$HOME/.local/share/ranger/bookmarks" ]; then
                 Info "Including Locations to Bookmarks File"
@@ -584,8 +512,6 @@ Depends () {
             fi
             SetCache "Deps-RngRead"
         fi
-
- # /4.2.15/ Set Ranger Configs Ranger/History
         if ! Cache "Deps-RngHist"; then
             if [ ! -f "$HOME/.local/share/ranger/history" ]; then
                 Info "Creating Local History Config File"
@@ -594,8 +520,6 @@ Depends () {
             fi
             SetCache "Deps-RngHist"
         fi
-
-  # /4.2.16/ Set Ranger Configs Ranger/Tagged
         if ! Cache "Deps-RngTag"; then
             if [ ! -f "$HOME/.local/share/ranger/tagged" ]; then
                 Info "Creating Local Tagged Config File"
@@ -604,8 +528,6 @@ Depends () {
             fi
             SetCache "Deps-RngTag"
         fi
-
-  # /4.2.17/ Set Ranger Configs Ranger/GLOBAL
         if ! Cache "Deps-RGlobal"; then
             if ! grep -q "RANGER_LOAD_DEFAULT_RC" "$PREFIX/etc/bash.bashrc"; then
                 echo 'export RANGER_LOAD_DEFAULT_RC=FALSE' >> "$PREFIX/etc/bash.bashrc"
@@ -616,9 +538,6 @@ Depends () {
         Info "Ranger Fully Configured"
         SetCache "Deps-Ranger"
     }
-
-# /4.3/ Run Termux Deps
-  # /4.3.1/ Depends Runnit
     if ! Cache "Deps-Bash"; then
         Bash-Complete
     fi
@@ -627,9 +546,8 @@ Depends () {
     fi
 }
 
-# <!-- [SS-5]: Configure Bash.BashRC ----->
+# <!-- Configure Bash.Bash ---->
 Bash () {
-  # /5.1/ Dir Trim
     if ! Cache "Bash-Prompt"; then
         Info "Setting Prompt-DirTrim..."
         if grep -q '^PROMPT_DIRTRIM=' "$PREFIX/etc/bash.bashrc"; then
@@ -639,14 +557,8 @@ Bash () {
         fi
         SetCache "Bash-Prompt"
     fi
-
-  # /5.2/ Config Bash.Bash
     if ! Cache "Bash-Echo"; then
         Info "Setting Autux Configs..."
-        echo " " >> "$PREFIX/etc/bash.bashrc"
-
-  # /5.2.1/ autux.conf handeling
-    ## FIX ME - Settings.json Depracted for autux.conf
         echo '## Autux Configs ##' >> "$PREFIX/etc/bash.bashrc"
         echo 'if command -v jq >/dev/null 2>&1; then' >> "$PREFIX/etc/bash.bashrc"
         echo '    export FBash="$(jq -r ''.Storage.bashFolder'' "$HOME/.config/autux/settings.json")"' >> "$PREFIX/etc/bash.bashrc"
@@ -655,28 +567,19 @@ Bash () {
         echo '    export FBash="$(grep -oP '"'"'bashFolder":\s*"\K[^"]+'"'"' "$HOME/.config/autux/settings.json")"' >> "$PREFIX/etc/bash.bashrc"
         echo '    export FPy="$(grep -oP '"'"'pyFolder":\s*"\K[^"]+'"'"' "$HOME/.config/autux/settings.json")"' >> "$PREFIX/etc/bash.bashrc"
         echo 'fi' >> "$PREFIX/etc/bash.bashrc"
-
-  # /5.2.2/ Export Variables
         echo 'export LX="$HOME/.local/bin"' >> "$PREFIX/etc/bash.bashrc"
         echo 'export PX="$HOME/VenV/scripts"' >> "$PREFIX/etc/bash.bashrc"
         echo 'export VENV="$HOME/VenV"' >> "$PREFIX/etc/bash.bashrc"
-
-  # /5.2.3/ Copy All from pyFolder & bashFolder and Add to PATH
         echo 'cp -av "$FPy" "$HOME/VenV/scripts"' >> "$PREFIX/etc/bash.bashrc"
         echo 'cp -av "$FBash" "$HOME/.local/bin"' >> "$PREFIX/etc/bash.bashrc"
         echo 'export PATH="$LX:$PATH"' >> "$PREFIX/etc/bash.bashrc"
         echo 'export PATH="$PX:$PATH"' >> "$PREFIX/etc/bash.bashrc"
         echo 'export PATH="$PREFIX/etc/autux:$PATH"' >> "$PREFIX/etc/bash.bashrc"
-
-  # /5.2.4/ Set Execution for PX and LX
         echo 'find "$LX" "$PX" "$PREFIX/etc/autux" -type f -exec chmod +x {} \;' >> "$PREFIX/etc/bash.bashrc"
-
-  # /5.3/ Set MOTD & History
+        echo 'alias ls="ls -a"'
         echo 'Welcome to Autux!' > "$PREFIX/etc/motd"
         [ -f "$HOME/.lesshst" ] && rm -f "$HOME/.lesshst"
         : > "$HOME/.bash_history"
-
-  # /5.4/ Source Bash.Bashrc
         set +u
         source "$PREFIX/etc/bash.bashrc"
         Info "bash.bashrc Set Successfully"
@@ -686,7 +589,7 @@ Bash () {
     SetCache "Bash-Echo"
 }
 
-# <!-- [SS-6]: Set Terminal Configs ----->
+# <!-- Set Terminal Configs ----->
 IDE () {
     if ! Cache "IDE-Prop"; then
         Info "Setting termux.properties settings..."
@@ -713,7 +616,7 @@ IDE () {
     set -u
 }
 
-# <!-- [SS-7]: Setup the PyVenV ----->
+# <!-- Setup the PyVenV ----->
 PyVenV () {
     if ! Cache "PyV-Inst"; then
         if ! pkg list-packages | grep -q 'python'; then
@@ -799,7 +702,6 @@ PyVenV () {
     set -u
 }
 
-# <!-- [SS--
 Setup () {
     Start
     MakeCache

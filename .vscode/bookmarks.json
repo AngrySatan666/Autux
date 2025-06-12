@@ -1,7 +1,7 @@
 {
 	"files": [
 		{
-			"path": "src/__setup__.sh",
+			"path": ".devcontainer/assets/SETUP.sh",
 			"bookmarks": [
 				{
 					"line": 564,

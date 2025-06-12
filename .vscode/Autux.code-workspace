@@ -198,10 +198,8 @@
             "markdown": true,
             "scminput": false,
             "python": true,
-            "shellscript": false,
             "ruby": true,
             "rust": true,
-            "powershell": false,
             "php": true,
             "makefile": true,
             "lua": true,
@@ -221,7 +219,9 @@
             "sql": true,
             "typescript": true,
             "xml": true,
-            "yaml": true
+            "yaml": true,
+            "shellscript": true,
+            "powershell": false
         },
         "markdownlint.focusMode": true,
         "markdownlint.config": {
