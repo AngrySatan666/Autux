@@ -1,116 +1,127 @@
-#!/usr/bin/env bash
-
+#!/data/data/com.termux/files/usr/bin/bash
 set -euo pipefail
 IFS=$'\n\t'
+BUGS=True
 
-SETTINGS="$(dirname "$0")/../../src/settings.json"
+# <!-- [SS-0]: Metadata ----->
+Version='0.2.1'
+Date='6.16.25'
+Dev='AngrySatan666'
 
-if command -v jq >/dev/null 2>&1; then
-    FBash="$(jq -r '.Storage.bashFolder' "$SETTINGS")"
-    FPy="$(jq -r '.Storage.pyFolder' "$SETTINGS")"
-else
-    FBash="$(grep -oP '"bashFolder":\\s*"\\K[^"]+' "$SETTINGS")"
-    FPy="$(grep -oP '"pyFolder":\\s*"\\K[^"]+' "$SETTINGS")"
-fi
-export FBash
-export FPy
+# <!-- [SS-1]: Global Variables ----->
+# /1.1/ Standard
+: "${PREFIX:=/data/data/com.termux/files/usr}"
+: "${HOME:=/data/data/com.termux/files/home}"
+: "${TMPDIR:=$PREFIX/tmp}"
+# /1.2/ Autux Spec
+: "${VENV:=$HOME/VenV}"
+: "${LX:=$HOME/.local/bin}"
+: "${PX:=$VENV/scripts}"
+: "${FPy:=$HOME/storage/shared/Termux/py}"
+: "${FBash:=$HOME/storage/shared/Termux/bash}"
 
-echo "[INFO] FBash: $FBash"
-echo "[INFO] FPy: $FPy"
-
-ensure_venv_and_deps() {
-    local venv_path="$1"
-    local venv_prompt="$2"
-    shift 2
-    local depends=("$@")
-    local activate="$venv_path/bin/activate"
-    if [ ! -f "$activate" ]; then
-        echo "[INFO] Creating venv at $venv_path with prompt $venv_prompt"
-        python3 -m venv "$venv_path" --prompt "$venv_prompt"
-    fi
-    source "$activate"
-    pip install --upgrade pip wheel setuptools
-    installed=$(pip freeze | cut -d= -f1 | tr '\n' ' ')
-    for dep in "${depends[@]}"; do
-        if ! echo "$installed" | grep -qw "$dep"; then
-            echo "[INFO] Installing missing dependency: $dep in $venv_path"
-            pip install "$dep"
-        fi
+# <!-- [SS-2]: SnippeType Functions ----->
+# /2.1/ Console Debug
+Error () {
+    local C="\033[91m"
+    local R="\033[0m"
+    for txt in "$@"; do
+        echo -e "${C}[ERROR] $txt${R}"
+        echo ' '
+        sleep 1
+        exit 1
     done
-    deactivate
-    scripts_dir="$venv_path/scripts"
-    mkdir -p "$scripts_dir"
-    if [ -f "$FPy" ]; then
-        cp "$FPy" "$scripts_dir/"
-        echo "[INFO] Copied $FPy to $scripts_dir/"
-        chmod +x "$scripts_dir/$(basename "$FPy")"
-    fi
-    if [ -d "$scripts_dir" ]; then
-        chmod +x "$scripts_dir"/*
-    fi
-    echo "[INFO] Editing PyVenV Site-Packages"
-    PYVER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-    if [ -n "$PYVER" ]; then
-        mkdir -p "$venv_path/lib/python$PYVER/site-packages"
-        if [ -d "$SCR_DIR/py" ]; then
-            cp -r "$SCR_DIR/py" "$venv_path/lib/python$PYVER/site-packages/"
-        fi
-        if [ -d "$SCR_DIR/site.customize" ]; then
-            "$venv_path/bin/pip" install -e "$SCR_DIR/site.customize"
-        fi
-    fi
-    echo "[INFO] PyVenV Site-Packages edited"
-    ACTIVATE="$venv_path/bin/activate"
-    SESSION_SH="$PREFIX/etc/autux/session.sh"
-    if [ -f "$ACTIVATE" ] && ! grep -q "source.*session.sh" "$ACTIVATE"; then
-        echo "" >> "$ACTIVATE"
-        echo "# Autux: Source session.sh on venv activation" >> "$ACTIVATE"
-        echo "[ -f \"$SESSION_SH\" ] && source \"$SESSION_SH\"" >> "$ACTIVATE"
+}
+
+Warn () {
+    local C="\033[33m"
+    local R="\033[0m"
+    if [ "$BUGS" = "true" ]; then
+        for txt in "$@"; do
+            echo -e "${C}[WARN] $txt${R}"
+            echo ' '
+            sleep 1
+        done
     fi
 }
-if command -v jq >/dev/null 2>&1; then
-    VenVPath="$(jq -r '.VenV.path' "$SETTINGS")"
-    mapfile -t VenVDeps < <(jq -r '.VenV.depend[]' "$SETTINGS")
-else
-    VenVPath="$(grep -oP '"path":\\s*"\\K[^"]+' "$SETTINGS" | head -n1)"
-    VenVDeps=()
-    while read -r dep; do
-        VenVDeps+=("$dep")
-    done < <(grep -A 10 '"VenV":' "$SETTINGS" | grep -oP '"[^"]+"' | grep -v 'path' | tr -d '"' | grep -v '^$')
-fi
-if [ -n "$VenVPath" ]; then
-    export VenV="$VenVPath"
-    ensure_venv_and_deps "$VenVPath" "VenV" "${VenVDeps[@]}"
-    if ! env | grep -q '^VenV='; then
-        export VenV="$VenVPath"
-    fi
-fi
 
-if command -v jq >/dev/null 2>&1; then
-    mapfile -t other_keys < <(jq -r 'to_entries[] | select(.key != "VenV" and .key != "README!" and .value.path and .value.depend) | .key' "$SETTINGS")
-    for key in "${other_keys[@]}"; do
-        vpath="$(jq -r ".${key}.path" "$SETTINGS")"
-        mapfile -t deps < <(jq -r ".${key}.depend[]" "$SETTINGS")
-        if [ -n "$vpath" ]; then
-            export "$key"="$vpath"
-            ensure_venv_and_deps "$vpath" "$key" "${deps[@]}"
-            if ! env | grep -q "^${key}="; then
-                export "$key"="$vpath"
-            fi
-        fi
+Info () {
+    local C="\033[92m"
+    local R="\033[0m"
+    if [ "$BUGS" = "true" ]; then
+        for txt in "$@"; do
+            echo -e "${C}[INFO] $txt${R}"
+            echo ' '
+            sleep 1
+        done
+    fi
+}
+# /2.2/ Console Control
+Input () {
+    if [[ -n "${answer_count:-}" ]]; then
+        for ((i = 1; i <= answer_count; i++)); do
+            unset "answer$i"
+        done
+    fi
+    answer_count=$#
+    local i=1
+    for txt in "$@"; do
+        local C="\033[32m"
+        local R="\033[0m"
+        echo -ne "${C}[INPUT] $txt : ${R}"
+        read "answer$i"
+        echo ' '
+        ((i++))
     done
-else
-    echo "[WARN] jq not found, skipping additional venvs beyond VenV."
-fi
+}
 
-if [ -f "$FBash" ]; then
-    mkdir -p "$HOME/local/bin"
-    cp "$FBash" "$HOME/local/bin/"
-    echo "[INFO] Copied $FBash to $HOME/local/bin/"
-    chmod +x "$HOME/local/bin/$(basename "$FBash")"
-    if [ -d "$HOME/local/bin" ]; then
-        chmod +x "$HOME/local/bin"/*
+Timer () {
+    local C="\033[35m"
+    local R="\033[0m"
+    local seconds=$1
+    while [ "$seconds" -gt 0 ]; do
+        echo -ne "\r${C}[WAIT] Time left: ${seconds}s${R}"
+        sleep 1
+        ((seconds--))
+    done
+    echo -e "\r${C}[WAIT] Time left: 0s${R}"
+    echo ' '
+}
+
+# <!-- [SS-3]: Automations ----->
+# /3.1/ Export Variables
+export VENV
+export LX
+export PX
+export FPy
+export FBash
+# /3.2/ Add to PATH
+export PATH="$LX:$PATH"
+export PATH="$PX:$PATH"
+# /3.3/ Copy All from FPy & FBash to PX and LX
+cp -av "$FPy" "$PX"
+cp -av "$FBash" "$LX"
+# /3.4/ Set Execution for LX & PX
+find "$LX" "$PX" -type f -exec chmod +x {} \;
+
+# <!-- [SS-4]: History ----->
+[ -f "$HOME/.lesshst" ] && rm -f "$HOME/.lesshst" || { Error "Failed to remove .lesshst"; Exit; }
+: > "$HOME/.bash_history" || { Error "Failed to clear .bash_history"; Exit; }
+
+# <!-- [SS-5]: ADB Access ----->
+Access () {
+    # /5.1/ Check For USB Connection
+
+}
+
+# <!-- [SS-6]: MOTD ----->
+Motd () {
+    # /6.1/ ReSet MOTD
+    echo 'Welcome to Autux!' > "$PREFIX/etc/motd" || { Error "Failed to set MOTD"; Exit; }
+    # /6.2/ Check ADB Access
+    if adb shell getprop service.adb.tcp.port | grep -q '5555'; then
+        echo 'ADB Access ENABLED' >> "$PREFIX/etc/motd" || { Error "Failed to set MOTD"; Exit; }
+    else
+        Access
     fi
-fi
-
-echo "[INFO] Environment setup complete."
+}

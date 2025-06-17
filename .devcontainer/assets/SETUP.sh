@@ -734,3 +734,51 @@ Setup () {
 
 # <!-- Run ----->
 Setup
+
+
+## DFepracted ##
+
+Bash () {
+    # /7.1/ Dir Trim
+    if ! Cache "Bash-Prompt"; then
+        Info "Setting Prompt-DirTrim..."
+        if grep -q '^PROMPT_DIRTRIM=' "$PREFIX/etc/bash.bashrc"; then
+            sed -i 's/^PROMPT_DIRTRIM=.*/PROMPT_DIRTRIM=0/' "$PREFIX/etc/bash.bashrc" || { Error "Failed to set PROMPT_DIRTRIM"; Exit; }
+        else
+            echo 'PROMPT_DIRTRIM=0' >> "$PREFIX/etc/bash.bashrc" || { Error "Failed to append PROMPT_DIRTRIM"; Exit; }
+        fi
+        SetCache "Bash-Prompt"
+    fi
+    # /7.2/ Config Bash.Bash
+    if ! Cache "Bash-Echo"; then
+        Info "Setting Autux Configs..."
+        echo ' ' >> "$PREFIX/etc/bash.bashrc" || { Error "Failed to append newline to bash.bashrc"; Exit; }
+    # /7.3/ Export Variables
+        echo 'export FPy="$HOME/storage/shared/Termux/py"' >> "$PREFIX/etc/bash.bashrc" || { Error "Failed to add FPy to bash.bashrc"; Exit; }
+        echo 'export FBash="$HOME/storage/shared/Termux/bash"' >> "$PREFIX/etc/bash.bashrc" || { Error "Failed to add FBash to bash.bashrc"; Exit; }
+        echo 'export LX="$HOME/.local/bin"' >> "$PREFIX/etc/bash.bashrc" || { Error "Failed to add LX to bash.bashrc"; Exit; }
+        echo 'export PX="$HOME/VenV/scripts"' >> "$PREFIX/etc/bash.bashrc" || { Error "Failed to add PX to bash.bashrc"; Exit; }
+        echo 'export VENV="$HOME/VenV"' >> "$PREFIX/etc/bash.bashrc" || { Error "Failed to add VENV to bash.bashrc"; Exit; }
+    # /7.4/ Copy All from pyFolder & bashFolder
+        echo 'cp -av "$FPy" "$HOME/VenV/scripts"' >> "$PREFIX/etc/bash.bashrc" || { Error "Failed to add copy command for FPy"; Exit; }
+        echo 'cp -av "$FBash" "$HOME/.local/bin"' >> "$PREFIX/etc/bash.bashrc" || { Error "Failed to add copy command for FBash"; Exit; }
+    # /7.5/ Add to PATH
+        echo 'export PATH="$LX:$PATH"' >> "$PREFIX/etc/bash.bashrc" || { Error "Failed to add LX to PATH"; Exit; }
+        echo 'export PATH="$PX:$PATH"' >> "$PREFIX/etc/bash.bashrc" || { Error "Failed to add PX to PATH"; Exit; }
+    # /7.6/ Set Execution for PX and LX
+        echo 'find "$LX" "$PX" "$PREFIX/etc/autux" -type f -exec chmod +x {} \;' >> "$PREFIX/etc/bash.bashrc" || { Error "Failed to add execution command for PX and LX"; Exit; }
+    # /7.7/ Set History
+        [ -f "$HOME/.lesshst" ] && rm -f "$HOME/.lesshst" || { Error "Failed to remove .lesshst"; Exit; }
+        : > "$HOME/.bash_history" || { Error "Failed to clear .bash_history"; Exit; }
+    # /7.8/ Set MOTD
+        Set MOTD & History
+        echo 'Welcome to Autux!' > "$PREFIX/etc/motd" || { Error "Failed to set MOTD"; Exit; }
+    # /7.9/ Source Bash.Bashrc
+        set +u
+        source "$PREFIX/etc/bash.bashrc"
+        Info "bash.bashrc Set Successfully"
+        set -u
+        Info "Autux Configs set in Bash.Bashrc"
+    fi
+    SetCache "Bash-Echo"
+}

@@ -1,23 +1,26 @@
-#!/usr/bin/env bash
+#!/data/data/com.termux/files/usr/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+BUGS=True
 
-# <!-- Metadata ----->
+# <!-- [SS-0]: Metadata ----->
 Version='0.1.3'
 Date='5.29.25'
 Dev='AngrySatan666'
 
-set -euo pipefail
-IFS=$'\n\t'
+# <!-- [SS-1]: Global Variables ----->
+# /1.1/ Standard
+: "${PREFIX:=/data/data/com.termux/files/usr}"
+: "${HOME:=/data/data/com.termux/files/home}"
+: "${TMPDIR:=$PREFIX/tmp}"
+# /1.2/ Autux Spec
+: "${VENV:=$HOME/VenV}"
+: "${LX:=$HOME/.local/bin}"
+: "${PX:=$VENV/scripts}"
+: "${FPy:=$HOME/storage/shared/Termux/py}"
+: "${FBash:=$HOME/storage/shared/Termux/bash}"
 
-# <!-- Global Variables ----->
-PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
-HOME="${HOME:-/data/data/com.termux/files/home}"
-export VENV="${HOME}/VenV"
-
-CACHE="${HOME}/.cache"
-STATE="${CACHE}/autux-perms.state"
-export SCR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# <!-- Configure Cache ----->
+# <!-- [SS-2]: Configure Cache ----->
 makkecache () {
     if [ ! -f "$STATE" ]; then
         mkdir -p "$CACHE" || { Error "Failed to create cache directory $CACHE"; Exit; }
@@ -26,11 +29,11 @@ makkecache () {
 }
 
 setcache () {
-    echo "$1=done" >> "$STATE" || Error "Failed to write to state file $STATE"
+    echo "$1" >> "$STATE" || Error "Failed to write to state file $STATE"
 }
 
 cache () {
-    grep -q "^$1=done" "$STATE" 2>/dev/null
+    grep -q "^$1" "$STATE" 2>/dev/null
 }
 
 # <!-- Attempt Permissions ----->
