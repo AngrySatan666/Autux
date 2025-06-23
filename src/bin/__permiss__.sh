@@ -19,6 +19,10 @@ Dev='AngrySatan666'
 : "${PX:=$VENV/scripts}"
 : "${FPy:=$HOME/storage/shared/Termux/py}"
 : "${FBash:=$HOME/storage/shared/Termux/bash}"
+: "${SETTINGS:=$HOME/.local/share/autux/settings}"
+: "${CACHE:=$HOME/.cache/autux}"
+: "${STATE:=$CACHE/autux.permiss}"
+: "${SETTINGS_HASH_FILE:=$CACHE/settings.hash}"
 
 # <!-- [SS-2]: Configure Cache ----->
 makkecache () {
@@ -36,18 +40,8 @@ cache () {
     grep -q "^$1" "$STATE" 2>/dev/null
 }
 
-# <!-- Attempt Permissions ----->
+# <!-- [SS-3]: Attempt Permissions ----->
 Permiss () {
-    if command -v getprop >/dev/null 2>&1; then
-        USB_DEBUG=$(getprop persist.sys.usb.config | grep -q 'adb' && echo "on" || echo "off")
-        if [ "$USB_DEBUG" = "on" ]; then
-            Info "USB Debugging is ON"
-        else
-            Warn "USB Debugging is OFF"
-        fi
-    else
-        Warn "getprop not available; cannot check USB debugging."
-    fi
     if command -v getprop >/dev/null 2>&1; then
         ADB_TCP_PORT=$(getprop service.adb.tcp.port)
         : "${ADB_TCP_PORT:=}"
@@ -198,26 +192,23 @@ Permiss () {
                     WRITE_SETTINGS
                     WRITE_SYNC_SETTINGS
                 )
-                {
-                    for perm in "${perms[@]}"; do
-                        if ! cache "$perm"; do
-                            echo -ne "\033[36m[PERM] Granting: android.permission.${perm} ...\033[0m "
-                            if adb shell pm grant com.termux android.permission.${perm} 2>/dev/null; then
-                                echo -e "\033[32m[SUCCESS]\033[0m"
-                                jq --arg p "$perm" '.perms.granted += [$p]' "$SCR_DIR/settings.json" > "$SCR_DIR/settings.json.tmp" && mv "$SCR_DIR/settings.json.tmp" "$SCR_DIR/settings.json"
-                                setcache "$perm" && setcache "${perm}-Pass"
-                            else
-                                echo -e "\033[31m[FAILED]\033[0m"
-                                jq --arg p "$perm" '.perms.failed += [$p]' "$SCR_DIR/settings.json" > "$SCR_DIR/settings.json.tmp" && mv "$SCR_DIR/settings.json.tmp" "$SCR_DIR/settings.json"
-                                all_success=0
-                                setcache "$perm" && setcache "${perm}-Fail"
-                            fi
-                        fi
-                    done
-                } || {
-                    Error "An error occurred during permission granting."
-                    return 1
-                }
+                for perm in "${perms[@]}"; do
+                    if attempt_permission "$perm"; then
+                        setcache "${perm}-Pass"
+                        awk -v perm="$perm" '
+                            BEGIN {added=0}
+                            /^\[perms\.granted\]/ {print; getline; while($0 !~ /^\[/ && $0 != "") {print; getline}; print perm " = true"; added=1}
+                            {if(!added) print}
+                        ' "$PREFIX/etc/autux/autux.conf" > "$PREFIX/etc/autux/autux.conf.tmp" && mv "$PREFIX/etc/autux/autux.conf.tmp" "$PREFIX/etc/autux/autux.conf"
+                    else
+                        setcache "${perm}-Fail"
+                        awk -v perm="$perm" '
+                            BEGIN {added=0}
+                            /^\[perms\.denied\]/ {print; getline; while($0 !~ /^\[/ && $0 != "") {print; getline}; print perm " = false"; added=1}
+                            {if(!added) print}
+                        ' "$PREFIX/etc/autux/autux.conf" > "$PREFIX/etc/autux/autux.conf.tmp" && mv "$PREFIX/etc/autux/autux.conf.tmp" "$PREFIX/etc/autux/autux.conf"
+                    fi
+                done
             fi
         fi
         setcache "Grants"
@@ -226,7 +217,7 @@ Permiss () {
 
 # <!-- Attempt Always Wireless Debugging
 port () {
-    if ! cache "5555"
+    if ! cache "5555"; then
         Info "Ensuring Wireless Debugging (ADB over TCP/IP) stays enabled on port 5555"
         adb shell setprop service.adb.tcp.port 5555
         adb shell stop adbd
@@ -242,10 +233,4 @@ port () {
 }
 
 # <!-- RUNNIT ----->
-setup () {
-    if ! cache "Grants"; then
-        Permiss
-    fi
-    port
-
-}
+setup

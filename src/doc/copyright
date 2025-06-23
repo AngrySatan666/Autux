@@ -1,1 +1,61 @@
-***© 2025 怒りの悪魔 AngrySatan666 of [https://github.com/AngrySatan666], All Rights Reserved.***
+# Autux Environment Change Log
+
+This document details every change Autux makes to your Termux and Android environment, for transparency and control.
+
+---
+
+## System & Environment Variables
+- Sets and exports key environment variables:
+  - `VENV`, `LX`, `PX`, `FPy`, `FBash`, `CACHE`, `SETTINGS`, `SETTINGS_HASH_FILE`, and more.
+- Adds Autux Python and Bash script directories to your `PATH` for global access.
+
+## File System & Directories
+- Creates and manages:
+  - `$HOME/.local/bin` (for user scripts)
+  - `$VENV/scripts` (for Python venv scripts)
+  - `$HOME/.cache/autux` (for cache/state)
+  - `$HOME/.local/share/autux/settings` (for settings)
+- Copies all scripts from `FPy` and `FBash` to `PX` and `LX`.
+- Sets executable permissions on all scripts in `PX` and `LX`.
+
+## Shell & Session
+- Appends Autux configuration comments and sourcing to `bash.bashrc`.
+- Clears or resets shell history files:
+  - Removes `$HOME/.lesshst` if present.
+  - Clears `$HOME/.bash_history`.
+- Optionally sets a custom Message of the Day (MOTD) in `$PREFIX/etc/motd`.
+
+## ADB & Device
+- Automates ADB over TCP/IP setup (port 5555), including:
+  - Setting `service.adb.tcp.port` property.
+  - Restarting `adbd` service for wireless debugging.
+- Attempts to connect to all IPs listed in settings for ADB.
+- Provides interactive setup for USB debugging and ADB connection.
+
+## Package Management
+- Updates all `pkg` and `apt` packages during setup.
+- Installs required Termux and Python dependencies (see `reqs/`).
+- Optionally enables extra repositories (e.g., x11-repo).
+
+## Settings & Aliases
+- Reads and applies settings from `src/configs/settings.jsonc`:
+  - App aliases for quick launching.
+  - Shell alias settings (e.g., `ls -a`).
+  - Custom command associations.
+- Monitors settings file for changes and reapplies if modified.
+
+## Storage & Permissions
+- Ensures Termux has storage permissions and access to shared storage.
+- Creates documentation and local bin directories as needed.
+
+## Python Virtual Environment
+- Sets up and activates a Python venv in `$VENV`.
+- Installs Python dependencies from `reqs/PIP_Req.txt`.
+
+## Other
+- Provides interactive prompts for user input during setup and configuration.
+- Maintains a cache/state file to avoid repeating completed setup steps.
+
+---
+
+**Note:** All changes are designed to be idempotent and safe for repeated runs. For full details, see the setup and session scripts in `src/bin/`.

@@ -21,8 +21,10 @@ Dev='AngrySatan666'
 : "${PX:=$VENV/scripts}"
 : "${FPy:=$HOME/storage/shared/Termux/py}"
 : "${FBash:=$HOME/storage/shared/Termux/bash}"
-    # /1.3/ Routing
-: "${SRC_DIR:="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"}"
+: "${SETTINGS:=$HOME/.local/share/autux/settings}"
+: "${SETTINGS_HASH_FILE:=$CACHE/settings.hash}"
+    # /1.3/ Source Routing
+: "${SRC_DIR:="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)"}"
 
 # <!-- [SS-2]: SnippeType Functions ----->
     # /2.1/ Console Debug
@@ -253,31 +255,41 @@ Storage () {
         fi
     # /5.2/ Documentation Files
         if ! Cache "Dir-Docs/Files"; then
+            # /5.2.1/ Install Autux License
             if [ ! -f "$PREFIX/share/doc/autux/LICENSE" ]; then
                 echo -n > "$PREFIX/share/doc/autux/LICENSE" || { Error "Failed to Create File doc/LICENSE"; exit 1; }
                 cp "$SRC_DIR/doc/LICENSE" "$PREFIX/share/doc/autux/LICENSE" || { Error "Failed to copy $SRC_DIR/doc/LICENSE"; exit 1; }
             fi
+            # /5.2.2/ Install Autux Copyright
             if [ ! -f "$PREFIX/share/doc/autux/copyright" ]; then
                 echo -n > "$PREFIX/share/doc/autux/copyright" || { Error "Failed to Create File doc/copyright"; exit 1; }
                 cp "$SRC_DIR/doc/copyright" "$PREFIX/share/doc/autux/copyright" || { Error "Failed to copy $SRC_DIR/doc/copyright"; exit 1; }
             fi
+            # /5.2.3/ Install Autux ReadMe Doc
             if [ ! -f "$PREFIX/share/doc/autux/README.md" ]; then
                 echo -n > "$PREFIX/share/doc/autux/README.md" || { Error "Failed to Create File doc/README.md"; exit 1; }
                 cp "$SRC_DIR/doc/README.md" "$PREFIX/share/doc/autux/README.md" || { Error "Failed to copy $SRC_DIR/doc/README.md"; exit 1; }
             fi
+            # /5.2.4/ Minimum Reqs Folder
+            if [ ! -d "$PREFIX/share/doc/autux/reqs" ]; then
+                mkdir -p "$PREFIX/share/doc/autux/reqs" || { Error "Failed to Create Directory doc/reqs"; exit 1; }
+            fi
+            # /5.2.5/ Install Py Reqs
             if [ ! -f "$PREFIX/share/doc/autux/PIP_Req.txt" ]; then
                 echo -n > "$PREFIX/share/doc/autux/PIP_Req.txt" || { Error "Failed to Create File doc/PIP_Req.txt"; exit 1; }
-                cp "$SRC_DIR/PIP_Req.txt" "$PREFIX/share/doc/autux/PIP_Req.txt" || { Error "Failed to copy $SRC_DIR/PIP_Req.txt"; exit 1; }
+                cp "$SRC_DIR/reqs/PIP_Req.txt" "$PREFIX/share/doc/autux/reqs/PIP_Req.txt" || { Error "Failed to copy $SRC_DIR/reqs/PIP_Req.txt"; exit 1; }
             fi
+            # /5.2.6/ Install Termux Reqs
             if [ ! -f "$PREFIX/share/doc/autux/TMX_Req.txt" ]; then
                 echo -n > "$PREFIX/share/doc/autux/TMX_Req.txt" || { Error "Failed to Create File doc/TMX_Req.txt"; exit 1; }
-                cp "$SRC_DIR/TMX_Req.txt" "$PREFIX/share/doc/autux/TMX_Req.txt" || { Error "Failed to copy $SRC_DIR/TMX_Req.txt"; exit 1; }
+                cp "$SRC_DIR/reqs/TMX_Req.txt" "$PREFIX/share/doc/autux/reqs/TMX_Req.txt" || { Error "Failed to copy $SRC_DIR/reqs/TMX_Req.txt"; exit 1; }
             fi
             SetCache "Dir-Docs/Files"
             Info "Documentation Files Created Successfully."
         fi
-    SetCache "Dir-Docs"
     fi
+    SetCache "Dir-Docs"
+    Info "Documentation Directory Setup Complete"
     # /5.3/ Local Bin
     if ! Cache "Dir-LocBin"; then
         if [ ! -d "$HOME/.local/bin" ]; then
@@ -365,23 +377,40 @@ Storage () {
         Info "Binaries Created"
     fi
     # /5.6/ Etc
-    if ! Cache "Dir-Etc"; then
+    if ! Cache "Dir-Etc/autux"; then
         if [ ! -d "$PREFIX/etc/autux" ]; then
-            mkdir -p "$PREFIX/etc/autux" || { Error "Failed to create $PREFIX/etc/autux"; exit 1; }
+            mkdir -p "$PREFIX/etc/autux" || { Error "Failed to create $PREFIX/etc/autux"; Exit; }
         fi
         if [ ! -f "$PREFIX/etc/autux/autux.conf" ]; then
-            echo -n > "$PREFIX/etc/autux/autux.conf" || { Error "Failed to Create File etc/autux/autux.conf"; exit 1; }
-            cp "$SRC_DIR/autux.conf" "$PREFIX/etc/autux/autux.conf" || { Error "Failed to copy $SRC_DIR/autux.conf"; exit 1; }
+            echo -n > "$PREFIX/etc/autux/autux.conf" || { Error "Failed to Create File etc/autux/autux.conf"; Exit; }
+            cp "$SRC_DIR/configs/autux.conf" "$PREFIX/etc/autux/autux.conf" || { Error "Failed to copy $SRC_DIR/configs/autux.conf"; Exit; }
         fi
         if [ ! -f "$PREFIX/etc/autux/autux.conf" ]; then
             Error "autux.conf not created"
         elif [ -f "$PREFIX/etc/autux/autux.conf" ]; then
-            SetCache "Dir-Etc"
+            SetCache "Dir-Etc/autux"
             Info "autux.conf Saved to Etc"
         fi
     fi
-    # /5.7/ Storage Access
+    # /5.7/ Settings
+    if ! Cache "Dir-Etc/Settings"; then
+        if [ ! -d "$HOME/.local/share/autux" ]; then
+            mkdir -p "$HOME/.local/share/autux" || { Error "Failed to create $HOME/.local/share/autux"; Exit; }
+        fi
+        if [ ! -f "$HOME/.local/share/autux/settings" ]; then
+            echo -n > "$HOME/.local/share/autux/settings" || { Error "Failed to Create File .local/share/autux/settings"; Exit; }
+            cp "$SRC_DIR/configs/settings.jsonc" "$HOME/.local/share/autux/settings" || { Error "Failed to copy $SRC_DIR/configs/settings"; Exit; }
+        fi
+        if [ ! -f "$HOME/.local/share/autux/settings" ]; then
+            Error "settings not created"
+        elif [ -f "$HOME/.local/share/autux/settings" ]; then
+            SetCache "Dir-Etc/Settings"
+            Info "settings Saved to Local Share"
+        fi
+    fi
+    # /5.8/ Storage Access
     if ! Cache "Dir-Access"; then
+        # /5.8.1/ Give Storage Access
         if [ ! -d "$HOME/storage" ]; then
             Warn "Termux storage permission not granted." "You must manually allow storage permissions on the next screen"
             Timer 5
@@ -389,30 +418,30 @@ Storage () {
                 Error "termux-setup-storage not found"
                 exit 1
             fi
-            termux-setup-storage || { Error "termux-setup-storage failed"; exit 1; }
+            termux-setup-storage || { Error "termux-setup-storage failed"; Exit; }
             Timer 5
+        # /5.8.2/ Create Storage Directory
             if [ -d "$HOME/storage" ]; then
                 Info "Storage Access Detected" "Creating Termux Folder on Local Storage"
                 mkdir -p "$HOME/storage/shared/Termux/bash" || { Error "Failed to create bash folder"; exit 1; }
-                FBash="$HOME/storage/shared/Termux/bash"
                 mkdir -p "$HOME/storage/shared/Termux/py" || { Error "Failed to create py folder"; exit 1; }
-                FPy="$HOME/storage/shared/Termux/py"
                 SetCache "Dir-Access"
                 Info "Folders and Variables Created"
-            else
-                Error "Storage Access not set Properly! Exiting"
-                Timer 5
-                exit 1
+            elif [ ! -d "$HOME/storage" ]; then
+                Error "Storage Access not detected" "This is REQUIRED for Autux to function properly"
             fi
-        else
+        # /5.8.3/ Create Directory if Storage Access Detected
+        elif [ -d "$HOME/storage" ]; then
             Info "Storage Access Detected" "Creating Termux Folder on Local Storage"
-            mkdir -p "$HOME/storage/shared/Termux/bash" || { Error "Failed to create bash folder"; exit 1; }
-            FBash="$HOME/storage/shared/Termux/bash"
-            mkdir -p "$HOME/storage/shared/Termux/py" || { Error "Failed to create py folder"; exit 1; }
-            FPy="$HOME/storage/shared/Termux/py"
-            SetCache "Dir-Access"
-            Info "Folders and Variables Created"
+            if [ ! -d "$HOME/storage/shared/Termux/bash" ]; then
+                mkdir -p "$HOME/storage/shared/Termux/bash" || { Error "Failed to create bash folder"; exit 1; }
+            fi
+            if [ ! -d "$HOME/storage/shared/Termux/py" ]; then
+                mkdir -p "$HOME/storage/shared/Termux/py" || { Error "Failed to create py folder"; exit 1; }
+            fi
         fi
+        SetCache "Dir-Access"
+        Info "Folders and Variables Created"
     fi
 }
 
@@ -455,7 +484,7 @@ Depends () {
             if [ ! -f "$PREFIX/share/bash-completion/completions/autux" ]; then
                 Info "Creating Autux Completions in Completions Directory"
                 echo -n > "$PREFIX/share/bash-completion/completions/autux" || { Error "Failed to create autux completion"; Exit; }
-                cp -v "$SCR_DIR/autux" "$PREFIX/share/bash-completion/completions/autux" || Error "Failed to copy $SCR_DIR/autux"
+                cp -v "$SRC_DIR/comp/autux" "$PREFIX/share/bash-completion/completions/autux" || Error "Failed to copy $SRC_DIR/comp/autux"
                 SetCache "Deps-ComBash"
                 Info "Completions Set"
             fi
@@ -711,47 +740,67 @@ Bash () {
                 echo 'bash "$PREFIX/bin/session"' >> "$PREFIX/etc/bash.bashrc" || { Error "Failed to append session.sh to bash.bashrc"; Exit; }
             fi
             SetCache "Bash-Session"
+            Info "Autux Configs set in Bash.Bashrc"
         fi
     # /7.4/ Source Bash.Bashrc
+    if [ -f "$PREFIX/etc/bash.bashrc" ]; then
         set +u
         source "$PREFIX/etc/bash.bashrc"
-        Info "bash.bashrc Set Successfully"
         set -u
-        Info "Autux Configs set in Bash.Bashrc"
     fi
-    SetCache "Bash-Echo"
+    # /7.5/ Ensure for Cache
+    if [ -f "$PREFIX/etc/bash.bashrc" ]; then
+        SetCache "Bash-Echo"
+        Info "Bash.Bashrc Configured Successfully"
+    elif [ ! -f "$PREFIX/etc/bash.bashrc" ]; then
+        Error "Bash.Bashrc not found after configuration"
+    fi
 }
 
 # <!-- [SS-8]: Set Terminal Configs ----->
 IDE () {
+    # /8.1/ Set Termux Properties
     if ! Cache "IDE-Prop"; then
         Info "Setting termux.properties settings..."
+        # /8.1.1/ If termux.properties exists, sed edit
         if [ -f "$HOME/.termux/termux.properties" ]; then
             sed -i "s/^# allow-external-apps =.*/allow-external-apps = true/" "$HOME/.termux/termux.properties" || { Error "Failed to edit termux.properties"; Exit; }
             sed -i "s/^# terminal-cursor-blink-rate =.*/terminal-cursor-blink-rate = 750/" "$HOME/.termux/termux.properties" || { Error "Failed to edit termux.properties"; Exit; }
             sed -i "s/^# terminal-cursor-style =.*/terminal-cursor-style = block/" "$HOME/.termux/termux.properties" || { Error "Failed to edit termux.properties"; Exit; }
-            sed -i "s/^# default-working-directory =.*/default-working-directory = "$HOME/VenV"/" "$HOME/.termux/termux.properties" || { Error "Failed to edit termux.properties"; Exit; }
+            sed -i "s/^# default-working-directory =.*/default-working-directory = "$HOME/VenV/scripts"/" "$HOME/.termux/termux.properties" || { Error "Failed to edit termux.properties"; Exit; }
             sed -i "s/^# shortcut.create-session =.*/shortcut.create-session = ctrl + t/" "$HOME/.termux/termux.properties" || { Error "Failed to edit termux.properties"; Exit; }
+        # /8.1.2/ If termux.properties does not exist, echo create it
         elif [ ! -f "$HOME/.termux/termux.properties" ]; then
             mkdir -p "$HOME/.termux"
-            echo "allow-external-apps = true" > "$HOME/.termux/termux.properties" || { Error "Failed to create termux.properties"; Exit; }
+            echo -n > "$HOME/.termux/termux.properties" || { Error "Failed to create termux.properties"; Exit; }
+            echo "allow-external-apps = true" >> "$HOME/.termux/termux.properties" || { Error "Failed to create termux.properties"; Exit; }
             echo "terminal-cursor-blink-rate = 750" >> "$HOME/.termux/termux.properties" || { Error "Failed to set terminal-cursor-blink-rate"; Exit; }
             echo "terminal-cursor-style = block" >> "$HOME/.termux/termux.properties" || { Error "Failed to set terminal-cursor-style"; Exit; }
             echo "bell-character = vibrate" >> "$HOME/.termux/termux.properties" || { Error "Failed to set bell-character"; Exit; }
-            echo "default-working-directory = $HOME/VenV" >> "$HOME/.termux/termux.properties" || { Error "Failed to set default-working-directory"; Exit; }
+            echo "default-working-directory = $HOME/VenV/scripts" >> "$HOME/.termux/termux.properties" || { Error "Failed to set default-working-directory"; Exit; }
             echo "shortcut.create-session = ctrl + t" >> "$HOME/.termux/termux.properties" || { Error "Failed to set shortcut.create-session"; Exit; }
         fi
-        Info "termux.properties Set Successfully"
-        SetCache "IDE-Prop"
     fi
-    set +u
-    termux-reload-settings
-    set -u
+    # /8.2/ Reload Settings
+    if [ -f "$HOME/.termux/termux.properties" ]; then
+        set +u
+        termux-reload-settings || { Error "Failed to reload termux settings"; Exit; }
+        set -u
+    fi
+    # /8.3/ Ensure for Cache
+    if [ ! -f "$HOME/.termux/termux.properties" ]; then
+        Error "termux.properties not found after reload"
+    elif [ -f "$HOME/.termux/termux.properties" ]; then
+        SetCache "PyV-Inst"
+        Info "Termux Properties Set Successfully"
+    fi
 }
 
 # <!-- [SS-9]: Setup the PyVenV ----->
 PyVenV () {
+    # /9.1/ Check Python Install
     if ! Cache "PyV-Inst"; then
+        # /9.1.1/ Check for Python3 is Installed
         if ! pkg list-packages | grep -q 'python'; then
             if ! python3 -V >/dev/null 2>&1; then
                 if ! pkg list-packages | grep -q 'python3'; then
@@ -761,8 +810,15 @@ PyVenV () {
                 fi
             fi
         fi
-        SetCache "PyV-Inst"
+        # /9.1.2/ Ensure for Cache
+        if pkg list-packages | grep -q 'python'; then
+            SetCache "PyV-Inst"
+            Info "Python Installed Successfully"
+        else
+            Error "Python not installed, exiting"
+        fi
     fi
+    # /9.2/ Ensure VenV Directory
     if ! Cache "PyV-Venv"; then
         if [[ -d "$VENV" ]]; then
             Info "Python venv folder exists"
@@ -774,6 +830,7 @@ PyVenV () {
         fi
         SetCache "PyV-Venv"
     fi
+    # /9.3/ Ensure Virtual Environment
     if ! Cache "PyV-Bin"; then
         if [ ! -f "$VENV/bin/activate" ]; then
             Info "Attempting to create the VenV at $VENV"
@@ -782,23 +839,27 @@ PyVenV () {
         fi
         SetCache "PyV-Bin"
     fi
+    # /9.4/ Activate the Venv
     if ! Cache "PyV-Act"; then
         if [ -f "$VENV/bin/activate" ]; then
             Info "Activating to update PIP"
             set +u
-            source "$VENV/bin/activate"
+            cd "$PX" || { Error "Failed to change directory to $VENV/scripts"; Exit; }
+            source "$VENV/bin/activate" || { Error "Failed to activate venv"; Exit; }
             python3 -m pip install --upgrade pip wheel setuptools || { Error "Failed to upgrade pip/wheel/setuptools"; Exit; }
             Info "PIP SETUPTOOLS & WHEEL Updated"
             set -u
         fi
         SetCache "PyV-Act"
     fi
+    # /9.5/ Install Dependencies
     if ! Cache "PyV-Req"; then
         Warn "Installing Deps"
         PAK "pip"
         Info "Python venv created and dependencies installed."
         SetCache "PyV-Req"
     fi
+    # /9.6/ Configure VenV Bin
     if ! Cache "PyV-BinRX"; then
         if [ -f "$VENV/bin/activate" ]; then
             Info "Editing PyVenV bin"
@@ -806,17 +867,222 @@ PyVenV () {
                 echo ' '
                 echo '## Autux Configs ##'
                 echo 'bash "$PREFIX/bin/session"'
-            } >> "$VENV/bin/activate" || Error "Failed to append to venv activate"
+            } >> "$VENV/bin/activate" || { Error "Failed to append to venv activate"; Exit; }
             Info "VenV bin/activate configured"
         fi
-        SetCache "PyV-BinRX"
     fi
-    set +u
+    # /9.7/ Source VenV Bin
     if [ -f "$VENV/bin/activate" ]; then
+        set +u
         source "$VENV/bin/activate"
+        set -u
+    fi
+    # /9.8/ Deactivate VenV
+    if [ -n "${VIRTUAL_ENV-}" ]; then
+        Info "Deactivating Python virtual environment"
+        deactivate || Warn "deactivate command not found or already deactivated"
+        cd $HOME || { Error "Failed to change directory to HOME"; Exit; }
+    fi
+    # /9.9/ Ensure for Cache
+    if [ ! -f "$VENV/bin/activate" ]; then
+        Error "venv/bin/activate not found after configuration"
+    elif [ -f "$VENV/bin/activate" ]; then
+        SetCache "PyV-BinRX"
         Info "VenV Activation Set Successfully"
     fi
-    set -u
+}
+
+# <!-- [SS-10]: Set Adb ----->
+SetAdb () {
+    # /10.1/ Check Usb Debugging
+    Debug () {
+        if ! Cache "Full-UsbDebug"
+            Info "Full Install selected, proceeding with ADB setup."
+            Input "Is USB Debugging enabled? *if you are unsure enter n* (y/n)"
+            if [[ $answer1 =~ ^[Yy]$ ]]; then
+                SetCache "Full-UsbDebug"
+                export full_debug=true
+                Info "USB Debugging is enabled, proceeding with ADB setup."
+            elif [[ $answer1 =~ ^[Nn]$ ]]; then
+                Warn "USB Debugging is not enabled. Please enable it in Developer Options."
+                echo 'To Enable USB Debugging, go to Settings > About Phone > Tap Build Number 7 times'
+                echo 'Go back to settings and find Developer Options > Usb Debugging > Enable '
+                Timer 5
+                Input "Was USB Debugging enabled? (y/n)"
+                if [[ $answer1 =~ ^[Yy]$ ]]; then
+                    SetCache "Full-UsbDebug"
+                    export full_debug=true
+                    Info "USB Debugging is now enabled, proceeding with ADB setup."
+                elif [[ $answer1 =~ ^[Nn]$ ]]; then
+                    Warn "USB Debugging is still not enabled. Please enable it in Developer Options."
+                    export full_debug=false
+                fi
+            fi
+        elif Cache "Full-UsbDebug"; then
+            Input "Is USB Debugging enabled? (y/n)"
+            if [[ $answer1 =~ ^[Yy]$ ]]; then
+                export full_debug=true
+                Info "USB Debugging is already enabled, proceeding with ADB setup."
+            fi
+        fi
+    }
+    # /10.2/ Check Usb Mode
+    UsbMode () {
+        if ! Cache "Full-UsbMode"; then
+            Input "Is the default USB mode set to File Transfer? *if you are unsure enter n* (y/n)"
+            if [[ $answer1 =~ ^[Yy]$ ]]; then
+                Info "Default USB mode is set to File Transfer, proceeding with ADB setup."
+                export full_usbmode=true
+            elif [[ $answer1 =~ ^[Nn]$ ]]; then
+                Warn "Default USB mode is not set to File Transfer. Please change it in Developer Options."
+                echo 'To Change USB Mode, go to Settings > Developer Options > Default USB Configuration > Select File Transfer'
+                Timer 5
+                Input "Is the default USB mode set to File Transfer? (y/n)"
+                if [[ $answer1 =~ ^[Yy]$ ]]; then
+                    export full_usbmode=true
+                    Info "Default USB mode is now set to File Transfer, proceeding with ADB setup."
+                elif [[ $answer1 =~ ^[Nn]$ ]]; then
+                    Warn "Default USB mode is still not set to File Transfer. Please change it in Developer Options."
+                    export full_usbmode=false
+                fi
+            fi
+        elif Cache "Full-UsbMode"; then
+            export full_usbmode=true
+            Info "Default USB mode is already set to File Transfer, proceeding with ADB setup."
+        fi
+    }
+    # /10.3/ Check if PC Connected
+    Pc () {
+        Input "Is your PC connected to the device via USB? (y/n)"
+        if [[ $answer1 =~ ^[Nn]$ ]]; then
+            Warn "PC is not connected to the device via USB."
+            echo 'Connect your PC to the device via USB and ensure USB Debugging is enabled.'
+            Timer 5
+            Input "Is your PC connected to the device via USB? (y/n)"
+            if [[ $answer1 =~ ^[Nn]$ ]]; then
+                Warn "PC is still not connected to the device via USB"
+                export full_conn=false
+            if [[ $answer1 =~ ^[Yy]$ ]]; then
+                export full_conn=true
+                Info "PC is now connected to the device via USB, proceeding with ADB setup."
+            fi
+        elif [[ $answer1 =~ ^[Yy]$ ]]; then
+            export full_conn=true
+            Info "PC is connected to the device via USB, proceeding with ADB setup."
+        fi
+    }
+    # /10.4/ Check if ADB is Installed
+    PcAdb () {
+        Input "Is ADB installed on your PC? (y/n) "
+        if [[ $answer1 =~ ^[Nn]$ ]]; then
+            Warn "ADB is not installed on your PC."
+            echo 'Please install ADB on your PC before proceeding.'
+            echo 'You can download ADB from https://developer.android.com/studio/releases/platform-tools'
+            Timer 5
+            Input "Is ADB installed on your PC? (y/n)"
+            if [[ $answer1 =~ ^[Nn]$ ]]; then
+                Warn "ADB is still not installed on your PC."
+                export full_adb=false
+            elif [[ $answer1 =~ ^[Yy]$ ]]; then
+                export full_adb=true
+                Info "ADB is now installed on your PC, proceeding with ADB setup."
+            fi
+        elif [[ $answer1 =~ ^[Yy]$ ]]; then
+            export full_adb=true
+            Info "ADB is already installed on your PC, proceeding with ADB setup."
+        fi
+    }
+    # /10.5/ Connect ADB
+    SetAdb () {
+        echo "Open a Terminal on Your PC and Run the Command: adb devices"
+        Input "Does your device appear in the list of connected devices? (y/n) "
+        if [[ $answer1 =~ ^[Yy]$ ]]; then
+            echo "On your PC Terminal, Run the Command: adb tcpip 5555"
+            Input "Did the command run successfully? (y/n) "
+            if [[ $answer1 =~ ^[Yy]$ ]]; then
+                echo "On your PC Terminal, Run the Command: adb shell ip -o -4 addr show wlan0"
+                Input "Enter the IP Address shown in the output after 'inlet' *eg. 192.168.1.420* : "
+                export DEVICE_IP="$answer1"
+                Input "Is this correct? IP: "$DEVICE_IP" (y/n) "
+                if [[ $answer1 =~ ^[Yy]$ ]]; then
+                    echo "On your PC Terminal, Run the Command: adb tcpip 5555 "
+                    Input "Did the command run successfully? (y/n) "
+                    if [[ $answer1 =~ ^[Yy]$ ]]; then
+                        Info "Termux Attempting ADB Connection"
+                        adb connect "$DEVICE_IP":5555 || { Error "Failed to connect to ADB"; Exit; }
+                        if adb shell getprop service.adb.tcp.port | grep -q '5555'; then
+                            Info "ADB Connection Successful"
+                            export full_adb_conn=true
+                            tmpfile=$(mktemp)
+                            jq --arg ip "$DEVICE_IP" '.IP |= (if index($ip) then . else . + [$ip] end)' "$HOME/.local/share/autux/settings" > "$tmpfile" && mv "$tmpfile" "$HOME/.local/share/autux/settings"
+                            SetCache "Full-Complete"
+                        else
+                            Warn "ADB Connection Failed" "Please check your PC connection and try again."
+                            export full_adb_conn=false
+                        fi
+            elif [[ $answer1 =~ ^[Nn]$ ]]; then
+                Warn "Command failed, please check your PC connection and try again."
+            fi
+        elif [[ $answer1 =~ ^[Nn]$ ]]; then
+            Warn "Device not found, please check your USB connection and try again."
+        fi
+    }
+    # /10.6/ Try to persist
+    Port () {
+        if ! cache "5555"; then
+            Info "Ensuring Wireless Debugging (ADB over TCP/IP) stays enabled on port 5555"
+            adb shell setprop service.adb.tcp.port 5555
+            adb shell stop adbd
+            adb shell start adbd
+            Info "Wireless Debugging *~should* now remain enabled until reboot"
+            if [ "$all_success" -eq 1 ]; then
+                Info "All permissions granted successfully!"
+            else
+                Warn "Some permissions could not be granted. Check the output above or settings.json for details."
+            fi
+        fi
+        setcache "5555"
+    }
+    # /10.7/ Runnit
+    if ! Cache "Full-Complete"; then
+        local full_adb=false
+        local full_debug=false
+        local full_usbmode=false
+        local full_conn=false
+        local full_adb_conn=false
+        Input "Do you want to Fully-Install Autux? *if yes, a USB3.0 to PC Connection is required* (y/n)"
+        if [[ $answer1 =~ ^[Yy]$ ]]; then
+            # /10.6.1/ Check USB Debugging
+            Debug
+            # /10.6.2/ Check default USB Mode
+            if [[ $full_debug == true ]]; then
+                UsbMode
+            fi
+            # /10.6.3/ Check if PC Connected
+            if [[ $full_usbmode == true && $full_debug == true ]]; then
+                Pc
+            fi
+            # /10.6.4/ Check if ADB is Installed
+            if [[ $full_conn == true && $full_usbmode == true && $full_debug == true ]]; then
+                PcAdb
+            fi
+            # /10.6.5/ Connect ADB
+            if [[ $full_adb == true && $full_conn == true && $full_usbmode == true && $full_debug == true ]]; then
+                SetAdb
+            fi
+        elif [[ $answer1 =~ ^[Nn]$ ]]; then
+            Warn "Full Install not selected" "Skipping ADB setup"
+            echo 'You can run this setup again later with the command: __setup__'
+        fi
+        # /10.6.6/ Ensure for Cache
+        if if adb shell getprop service.adb.tcp.port | grep -q '5555'; then
+            Info "ADB Connection Successful"
+            Port
+            SetCache "Full-Complete"
+        else
+            Warn "ADB Connection Failed" "Please check your PC connection and try again."
+        fi
+    fi
 }
 
 # <!-- [SS-10]: Main ----->
@@ -846,6 +1112,10 @@ Setup () {
     if ! Cache "PyV"; then
         PyVenV
         SetCache "PyV"
+    fi
+    if ! Cache "Adb"; then
+        SetAdb
+        SetCache "Adb"
     fi
     End
 }

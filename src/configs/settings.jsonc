@@ -1,0 +1,59 @@
+// User Settings for Autux
+// Edits to this file will have a direct effect on AUtux on next Boot
+
+{
+// Autux Settings
+    // All the Base IP Addresses Autux will use to try to connect to ADB
+    "IP": [
+        ""
+    ],
+
+// Session Settings (Boot)
+    // Auto-Attempt ABD Connection on BootUnDetected
+    "session.attempt": true,
+
+// Alias Settings
+    // ls command always show hidden files
+    "alias.ls.ShowAll": true,
+    // Enable com Associations for Applications
+        // Type 'autux --app <app>' to launch an app using its com association ie. autux --app Orna
+    "alias.coms.enabled": true,
+    // com Associations for Applications
+    "alias.coms" : [
+        {"Orna": "playorna.com.orna"},
+        {"Albion": "com.albiononline"},
+        {"Ark": "com.studiowildcard.ark"},
+        {"Minecraft": "com.mojang.minecraftpe"},
+        {"RISK": "com.hasbro.riskbigscreen"},
+        {"AdventureCapitalist": "com.kongregate.mobile.adventurecapitalist.google"},
+        {"DayR": "com.gm_shaber.dayrpremium"},
+        {"GenshinImpact": "com.miHoYo.GenshinImpact"},
+        {"HeroOfAethric": "com.avalon.rpg"},
+        {"ShieldHeroRise": "com.ltgame.dzyzcml.global"},
+        {"Twitch": "tv.twitch.android.app"},
+        {"Webull": "com.webull.stock"},
+        {"TradingView": "com.tradingview.tradingviewapp"},
+        {"Chime": "com.onedebit.chime"},
+        {"Moomoo": "com.moomoo.trade"},
+        {"QuantData": "com.quantdata.app"},
+        {"Facebook": "com.facebook.katana"},
+        {"Snapchat": "com.snapchat.android"},
+        {"Discord": "com.discord"},
+        {"ChatGPT": "com.openai.chatgpt"},
+        {"Copilot": "com.microsoft.copilot"},
+        {"Claude": "com.anthropic.claude"},
+        {"Code": "com.ferdium.editor.code"},
+        {"CodeEditor": "com.foxdebug.acode"},
+        {"RustDesk": "com.github.rustdesk"},
+        {"ImageBB": "com.imgbb"},
+        {"MacroDroid": "com.arlosoft.macrodroid"},
+        {"FakeGPS": "com.lexa.fakegps"},
+        {"Daylio": "net.daylio"},
+        {"Spotify": "com.spotify.music"},
+        {"Kiwi": "com.kiwibrowser.browser"},
+        {"Chrome": "com.android.chrome"},
+        {"Orbot": "org.torproject.android"},
+        {"Orfox": "org.torproject.orfox"},
+        {"TorBrowser": "org.torproject.torbrowser"}
+    ]
+}

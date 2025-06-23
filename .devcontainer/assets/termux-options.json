@@ -1,0 +1,269 @@
+{
+    "termux": {
+        "termux-setup-storage": {
+            "$": "termux-setup-storage",
+            "desc": [
+                "Opens a prompt on the device to Allow Storage Access Permission"
+            ]
+        },
+        "termux-change-repo": {
+           "$": "termux-change-repo",
+            "desc": [
+                "Change the default package repository mirrors for faster downloads or regional mirrors"
+            ]
+        },
+        "termux-open": {
+          "$": "termux-open <file>",
+          "desc": [
+            "Open a file using an Android app associated with its MIME type"
+          ]
+        },
+        "termux-open-url": {
+          "$": "termux-open-url <url>",
+          "desc": [
+            "Open a URL using the default web browser or link handler"
+          ]
+        },
+        "termux-share": {
+          "$": "termux-share <file>",
+          "desc": [
+            "Open Android's share menu to share a file or text"
+          ]
+        },
+        "termux-toast": {
+          "$": "termux-toast \"message\"",
+          "desc": [
+            "Display a temporary toast popup message on the screen"
+          ]
+        },
+        "termux-notification": {
+            "$": "termux-notification --title \"Title\" --content \"Message\"",
+            "desc": [
+                "Send a persistent Android system notification from Termux",
+                "Requires Termux-Api"
+            ]
+        },
+        "termux-vibrate": {
+          "$": "termux-vibrate -d 500",
+          "desc": [
+            "Trigger the vibration motor for a specified duration (ms)"
+          ]
+        },
+        "termux-battery-status": {
+          "$": "termux-battery-status",
+          "desc": [
+            "Display detailed battery information: level, status, health, and more"
+          ]
+        },
+        "termux-sensor": {
+          "$": "termux-sensor -s accelerometer -n 10",
+          "desc": [
+            "Fetch sensor data from Android sensors like accelerometer, gyroscope, etc"
+          ]
+        },
+        "termux-location": {
+          "$": "termux-location",
+          "desc": [
+            "Retrieve the current GPS location (lat/lon) if permissions are granted"
+          ]
+        },
+        "termux-wake-lock": {
+          "$": "termux-wake-lock",
+          "desc": [
+            "Prevent the device from sleeping while a script is running"
+          ]
+        },
+        "termux-wake-unlock": {
+          "$": "termux-wake-unlock",
+          "desc": [
+            "Release a previously set wake lock to allow the device to sleep again"
+          ]
+        },
+        "termux-reload-settings": {
+          "$": "termux-reload-settings",
+          "desc": [
+            "Apply changes from ~/.termux/termux.properties without restarting Termux"
+          ]
+        },
+        "termux-forward": {
+          "$": "termux-forward tcp:8000 tcp:8080",
+          "desc": [
+            "Forward TCP ports locally, useful for debugging or ADB-style services"
+          ]
+        },
+        "termux-job-scheduler": {
+          "$": "termux-job-scheduler --script /path/to/script.sh --period-ms 3600000",
+          "desc": [
+            "Schedule recurring background jobs like cron, even across reboots"
+          ]
+        },
+        "termux-clipboard-get": {
+          "$": "termux-clipboard-get",
+          "desc": [
+            "Get text currently stored in the Android clipboard"
+          ]
+        },
+        "termux-clipboard-set": {
+          "$": "echo \"text\" | termux-clipboard-set",
+          "desc": [
+            "Set new text into the Android clipboard"
+          ]
+        },
+        "termux-volume": {
+          "$": "termux-volume music 5",
+          "desc": [
+            "Set media volume level (0–15) for a specific stream like music or ring"
+          ]
+        },
+        "termux-telephony-call": {
+          "$": "termux-telephony-call +1234567890",
+          "desc": [
+            "Initiate a phone call to the specified number"
+          ]
+        },
+        "termux-telephony-cellinfo": {
+          "$": "termux-telephony-cellinfo",
+          "desc": [
+            "Get cell tower information and signal strength"
+          ]
+        },
+        "termux-telephony-deviceinfo": {
+          "$": "termux-telephony-deviceinfo",
+          "desc": [
+            "Get SIM and mobile network information"
+          ]
+        },
+        "termux-sms-list": {
+            "$": "termux-sms-list",
+            "desc": [
+                "Read and print recent SMS messages from the inbox"
+            ]
+        },
+        "termux-sms-send": {
+          "$": "termux-sms-send -n +1234567890 \"Hello!\"",
+          "desc": [
+            "Send an SMS message to a given phone number"
+          ]
+        },
+        "termux-camera-photo": {
+          "$": "termux-camera-photo -c 0 -o photo.jpg",
+          "desc": [
+            "Take a picture using the specified camera (0 = rear, 1 = front)"
+          ]
+        },
+        "termux-audio-info": {
+          "$": "termux-audio-info",
+          "desc": [
+            "Get current audio hardware and usage info from Android"
+          ]
+        },
+        "termux-brightness": {
+          "$": "termux-brightness 120",
+          "desc": [
+            "Set screen brightness (0 to 255)"
+          ]
+        },
+        "termux-media-player": {
+          "$": "termux-media-player play myfile.mp3",
+          "desc": [
+            "Play audio files through Android's media system"
+          ]
+        },
+        "termux-media-scan": {
+          "$": "termux-media-scan ~/Music",
+          "desc": [
+            "Trigger Android's media scanner for the specified directory"
+          ]
+        },
+        "termux-microphone-record": {
+          "$": "termux-microphone-record -f out.wav -l 10",
+          "desc": [
+            "Record audio from microphone to a file (10 seconds in this example)"
+          ]
+        },
+        "termux-call-log": {
+          "$": "termux-call-log",
+          "desc": [
+            "Print recent call log entries from the phone"
+            ]
+        }
+    }
+    "pkg": {
+        "pkg autoclean": {
+            "$": "pkg autoclean",
+            "desc": [
+                "Remove all packages that were installed as dependencies and are no longer required"
+            ]
+        },
+        "pkg clean": {
+            "$": "pkg clean",
+            "desc": [
+                "Remove all cached .deb files to free up space"
+            ]
+        },
+        "pkg update": {
+            "$": "pkg update",
+            "desc": [
+                "Update the list of available packages and their versions"
+            ]
+        },
+        "pkg upgrade": {
+            "$": "pkg upgrade",
+            "desc": [
+                "Upgrade all installed packages to the latest available versions"
+            ]
+        },
+        "pkg install": {
+            "$": "pkg install <package>",
+            "desc": [
+                "Install the specified package(s)"
+            ]
+        },
+        "pkg uninstall": {
+              "$": "pkg uninstall <package>",
+              "desc": [
+                "Uninstall the specified package"
+              ]
+            },
+        "pkg list-all": {
+            "$": "pkg list-all",
+            "desc": [
+                "List all available packages in the Termux repositories"
+            ]
+        },
+        "pkg list-installed": {
+            "$": "pkg list-installed",
+            "desc": [
+                "List all currently installed packages"
+            ]
+        },
+        "pkg files": {
+            "$": "pkg files <package>",
+            "desc": [
+                "List all files installed by a specific package"
+            ]
+        },
+        "pkg search": {
+            "$": "pkg search <term>",
+            "desc": [
+                "Search for a package by name or description"
+            ]
+        },
+        "pkg show": {
+            "$": "pkg show <package>",
+            "desc": [
+                
+            ]
+        }
+    },
+    "api": {
+        "$": [
+            "pkg update"
+            "pkg install -y termux-api",
+            "pkg upgrade -y",
+            "termux-sms-list", //
+            "python3 -m pip install --upgrade setuptools wheel",
+            ""
+        ]
+    }
+}
