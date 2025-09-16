@@ -12,6 +12,7 @@ BUGS='true'
 : "${CONF:=$HOME/.config}"
 : "${DOC:=$HOME/storage/shared/Documents}"
 : "${BRC:=$PREFIX/etc/bash.bashrc}"
+: "${UBIN:=$PREFIX/var/lib/proot-distro/installed-rootfs/ubuntu/.local/bin}"
 
     # /1.2/ CodeServer Spec
 : "${CACHE:=$HOME/.cache/codeserver/build.cache}"
@@ -216,7 +217,7 @@ State () {
     # /4.3/ Ensure Directories
     if ! cache State-Dirs; then
         info "Checking Required Directories"
-        local DIRS=("$BIN" "$DOC" "$ENV" "$CONF")
+        local DIRS=("$BIN" "UBIN" "$DOC" "$ENV" "$CONF")
         for dir in "${DIRS[@]}"; do
             if [ ! -d "$dir" ]; then
                info "Creating Directory $dir"
