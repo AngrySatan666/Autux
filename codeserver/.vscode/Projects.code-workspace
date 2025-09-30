@@ -1,0 +1,289 @@
+// Projects Workspace
+{
+    "folders": [
+        {
+            "path": ".."
+        }
+    ],
+    "settings": {
+        // Editor
+        "workbench.colorTheme": "Default Dark Modern",
+        "workbench.cloudChanges.autoResume": "onReload",
+        "workbench.editor.showIcons": true,
+        "workbench.editor.showTabs": "multiple",
+        "workbench.editor.tabSizingFixedMaxWidth": 80,
+        "workbench.editor.tabSizingFixedMinWidth": 40,
+        "workbench.settings.editor": "json",
+        "workbench.settings.openDefaultSettings": true,
+        "workbench.secondarySideBar.showLabels": true,
+        "workbench.sideBar.location": "left",
+        "workbench.tree.stickyScrollMaxItemCount": 8,
+        "workbench.startupEditor": "none",
+        "workbench.statusBar.visible": true,
+        "breadcrumbs.enabled": true,
+        "breadcrumbs.showArrays": true,
+        "breadcrumbs.showBooleans": true,
+        "breadcrumbs.showClasses": true,
+        "breadcrumbs.showConstructors": true,
+        "breadcrumbs.showEnums": true,
+        "breadcrumbs.showEvents": true,
+        "breadcrumbs.showFiles": true,
+        "breadcrumbs.showFunctions": true,
+        "breadcrumbs.showInterfaces": true,
+        "breadcrumbs.showMethods": true,
+        "breadcrumbs.showKeys": true,
+        "breadcrumbs.showNamespaces": true,
+        "breadcrumbs.showModules": true,
+        "breadcrumbs.showNumbers": true,
+        "breadcrumbs.showNull": true,
+        "breadcrumbs.showOperators": true,
+        "breadcrumbs.showObjects": true,
+        "breadcrumbs.showPackages": true,
+        "breadcrumbs.showStrings": true,
+        "breadcrumbs.showStructs": true,
+        "breadcrumbs.showTypeParameters": true,
+        "breadcrumbs.showVariables": true,
+        "breadcrumbs.showConstants": true,
+        "breadcrumbs.showEnumMembers": true,
+        "breadcrumbs.showFields": true,
+        "breadcrumbs.showProperties": true,
+        "workbench.localHistory.maxFileEntries": 5000,
+        "workbench.localHistory.maxFileSize": 1024,
+        "editor.tabCompletion": "off",
+        "editor.renderControlCharacters": true,
+        "editor.fontLigatures": true,
+        "editor.codeLens": true,
+        "editor.cursorBlinking": "blink",
+        "editor.cursorStyle": "line",
+        "editor.cursorWidth": 0,
+        "editor.formatOnType": true,
+        "editor.formatOnPaste": true,
+        "editor.indentSize": "tabSize",
+        "editor.inlineSuggest.edits.showCollapsed": true,
+        "editor.inlineSuggest.edits.renderSideBySide": "never",
+        "editor.renderWhitespace": "all",
+        "editor.minimap.renderCharacters": true,
+        "editor.minimap.autohide": "mouseover",
+        "editor.minimap.enabled": true,
+        "editor.minimap.maxColumn": 120,
+        "editor.inlineSuggest.showToolbar": "onHover",
+        "editor.inlineSuggest.enabled": true,
+        "editor.quickSuggestionsDelay": 0,
+        "editor.screenReaderAnnounceInlineSuggestion": false,
+        "editor.stickyScroll.enabled": true,
+        "editor.stickyScroll.maxLineCount": 5,
+        "editor.tabSize": 4,
+        "editor.detectIndentation": false,
+        "editor.showUnused": true,
+        "editor.matchBrackets": "always",
+        "editor.bracketPairColorization.enabled": true,
+        "editor.fontFamily": "Arial Unicode MS, Consolas, 'Courier New', monospace",
+        "editor.snippetSuggestions": "top",
+        "editor.suggest.preview": true,
+        "editor.suggestSelection": "recentlyUsed",
+        "editor.scrollbar.verticalScrollbarSize": 21,
+        "editor.scrollbar.horizontalScrollbarSize": 16,
+        "editor.mouseWheelZoom": true,
+        "editor.trimAutoWhitespace": true,
+        "editor.quickSuggestions": {
+            "other": "on",
+            "comments": "off",
+            "strings": "on"
+        },
+        "diffEditor.codeLens": true,
+        "diffEditor.maxComputationTime": 0,
+        "diffEditor.maxFileSize": 1024,
+        "editor.fontSize": 12,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.aiStats.enabled": true,
+        "editor.autoClosingBrackets": "always",
+        "editor.autoIndent": "full",
+        "editor.autoIndentOnPaste": true,
+        "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+        "editor.experimentalWhitespaceRendering": "svg",
+        "editor.guides.bracketPairs": "active",
+        "editor.insertSpaces": true,
+        "editor.suggest.insertMode": "replace",
+
+        // Files
+        "files.autoSave": "onFocusChange",
+        "files.insertFinalNewline": true,
+
+        // Tools
+        "vsintellicode.java.completionsEnabled": true,
+        "vsintellicode.typescript.completionsEnabled": true,
+        "vsintellicode.python.completionsEnabled": true,
+        "vsintellicode.sql.completionsEnabled": true,
+        "vsintellicode.modify.editor.suggestSelection": "enabled",
+        "auto-close-tag.enableAutoCloseTag": true,
+        "auto-close-tag.activationOnLanguage": [
+            "xml",
+            "php",
+            "blade",
+            "ejs",
+            "jinja",
+            "javascript",
+            "javascriptreact",
+            "typescript",
+            "typescriptreact",
+            "plaintext",
+            "markdown",
+            "vue",
+            "liquid",
+            "erb",
+            "lang-cfml",
+            "cfml",
+            "HTML (EEx)",
+            "HTML (Eex)",
+            "plist"
+        ],
+        "auto-rename-tag.activationOnLanguage": [
+            "html"
+        ],
+
+        // Dictionary & Spelling
+        "cSpell.suggestionsTimeout": 1000,
+        "cSpell.blockCheckingWhenLineLengthGreaterThan": 200,
+        "cSpell.caseSensitive": false,
+        "cSpell.enabled": true,
+        "cSpell.enabledFileTypes": {
+            "*": true,
+            "markdown": true
+        },
+        "cSpell.files": [],
+        "cSpell.dictionaries": [],
+        "cSpell.customDictionaries": {
+            "Practice": {
+                "name": "Practice",
+                "description": "Testing out the Dictionary and Spelling",
+                "path": "./.vscode/Projects.dic",
+            }
+        },
+        "cSpell.dictionaryDefinitions": [],
+        "cSpell.words": [
+            "AngrySatan",
+            "AngrySatan666",
+        ],
+        "cSpell.ignoreWords": [],
+        "cSpell.ignorePaths": [
+            "package-lock.json",
+            "node_modules",
+            "vscode-extension",
+            ".git/{info,lfs,logs,refs,objects}/**",
+            ".git/{index,*refs,*HEAD}",
+            ".vscode-insiders",
+            ".vscode"
+        ],
+        "cSpell.flagWords": [],
+        "cSpell.suggestionNumChanges": 5,
+        "cSpell.numSuggestions": 5,
+        "cSpell.minWordLength": 3,
+        "cSpell.maxNumberOfProblems": 10000,
+        "cSpell.language": "en",
+
+        // Lint & Formatting
+        "pylint.args": ["--rcfile=${workspaceFolder}/.pylintrc"],
+        "prettier.tabWidth": 4,
+        "prettier.printWidth": 10000,
+        "prettier.bracketSameLine": true,
+        "prettier.htmlWhitespaceSensitivity": "strict",
+        "prettier.enable": true,
+        "prettier.useEditorConfig": true,
+        "prettier.enableDebugLogs": true,
+        "prettier.endOfLine": "lf",
+        "prettier.trailingComma": "es5",
+        "prettier.useTabs": false,
+        "trailing-spaces.trimOnSave": true,
+        "trailing-spaces.includeEmptyLines": true,
+
+        // Html & Css
+        "html.preview.scrollEditorWithPreview": true,
+        "html.preview.doubleClickToSwitchToEditor": true,
+        "html.hover.references": true,
+        "html.hover.documentation": true,
+        "html.format.enable": true,
+        "css.completion.completePropertyWithSemicolon": true,
+        "css.completion.triggerPropertyValueCompletion": true,
+        "css.format.newlineBetweenRules": true,
+        "css.format.newlineBetweenSelectors": true,
+        "css.format.preserveNewLines": true,
+        "css.format.spaceAroundSelectorSeparator": true,
+        "css.hover.documentation": true,
+        "css.hover.references": true,
+        "css.validate": true,
+        "css.lint.emptyRules": "warning",
+        "css.lint.duplicateProperties": "warning",
+        "css.lint.hexColorLength": "error",
+        "less.completion.completePropertyWithSemicolon": true,
+        "less.format.newlineBetweenRules": true,
+        "less.format.newlineBetweenSelectors": true,
+        "less.format.preserveNewLines": true,
+        "less.format.spaceAroundSelectorSeparator": false,
+        "less.hover.documentation": true,
+        "less.hover.references": true,
+        "less.validate": true,
+        "less.lint.emptyRules": "warning",
+        "less.lint.duplicateProperties": "warning",
+        "less.lint.hexColorLength": "error",
+
+        // Yaml
+        "yaml.format.enable": true,
+        "yaml.validate": true,
+        "yaml.completion": true,
+        "yaml.schemaStore.enable": true,
+
+        // Java
+        "javascript.suggest.names": true,
+        "js/ts.hover.maximumLength": 1000,
+        "javascript.autoClosingTags": true,
+        "javascript.format.enable": true,
+        "javascript.inlayHints.parameterTypes.enabled": true,
+        "javascript.preferences.organizeImports": {
+            "enabled": true,
+            "sortImports": true
+        },
+        "javascript.suggest.autoImports": true,
+        "javascript.suggest.enabled": true,
+        "javascript.suggest.completeJSDocs": true,
+        "javascript.suggestionActions.enabled": true,
+
+        // Json
+        "json.format.enable": true,
+        "json.validate.enable": true,
+        "json.schemas": []
+    },
+    "extensions": {
+        "recommendations": [
+            // Tools
+            "alefragnani.Bookmarks",
+            "streetsidesoftware.code-spell-checker",
+
+            // Java
+            "redhat.java",
+
+            // Formatting
+            "esbenp.prettier-vscode",
+
+            // Python
+            "ms-python.python",
+            "ms-python.debugpy",
+
+            // Yaml
+            "redhat.vscode-yaml",
+
+            // SQL
+            "mtxr.sqltools",
+            "cweijan.vscode-mysql-client2",
+
+            // MarkDown
+            "zaaack.markdown-editor",
+
+            // Html & Css
+            "ecmel.vscode-html-css",
+
+            //
+        ]
+    }
+
+}

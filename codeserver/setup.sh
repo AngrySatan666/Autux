@@ -13,6 +13,7 @@ BUGS='true'
 : "${DOC:=$HOME/storage/shared/Documents}"
 : "${BRC:=$PREFIX/etc/bash.bashrc}"
 : "${UBIN:=$PREFIX/var/lib/proot-distro/installed-rootfs/ubuntu/.local/bin}"
+: "${UBHOME:=$PREFIX/var/lib/proot-distro/installed-rootfs/ubuntu}"
 
     # /1.2/ CodeServer Spec
 : "${CACHE:=$HOME/.cache/codeserver/build.cache}"
@@ -401,7 +402,7 @@ Setup () {
         ok "Ranger Config File Ready"
     fi
 
-    # /5.7/ Set Ranger Configs Show Hidden
+    # /5.8/ Set Ranger Configs Show Hidden
     if ! cache Set-RngHidden; then
         if [ -f "$rc_file" ]; then
             local target_line1="set show_hidden false"
@@ -496,16 +497,16 @@ Setup () {
 
     # /5.12/ Set Ranger Configs Wrap Scroll
     if ! cache Set-RngScroll; then
-        local target_line7="set wrap_scroll false"
-        local new_line7="set wrap_scroll true"
-        if grep -q "^$target_line7" "$rc_file"; then
+        local target_line8="set wrap_scroll false"
+        local new_line8="set wrap_scroll true"
+        if grep -q "^$target_line8" "$rc_file"; then
             info "Editing Wrap Scroll Setting In Config"
-            sed -i "s/^$target_line7.*/$new_line7/" "$rc_file" || error "Failed To Edit Ranger Config"
-        elif grep -q "^$new_line7" "$rc_file"; then
+            sed -i "s/^$target_line8.*/$new_line8/" "$rc_file" || error "Failed To Edit Ranger Config"
+        elif grep -q "^$new_line8" "$rc_file"; then
             ok "Wrap Scroll Already Set In Config"
         else
             info "Adding Wrap Scroll Setting To Config"
-            echo "$new_line7" >> "$rc_file" || error "Failed To Add Setting To Config"
+            echo "$new_line8" >> "$rc_file" || error "Failed To Add Setting To Config"
             ok "Added Wrap Scroll Setting To Config"
         fi
         setcache Set-RngScroll
@@ -561,7 +562,7 @@ Setup () {
         setcache Set-RngRead
     fi
 
-    # /5.17/ Set Ranger Configs Ranger/History
+    # /5.18/ Set Ranger Configs Ranger/History
     if ! cache Set-RngHist; then
         if [ ! -f "$HOME/.local/share/ranger/history" ]; then
             info "Creating Local History Config File"
@@ -624,7 +625,7 @@ BashRC () {
         if [ -f "$HOME/.termux/termux.properties" ]; then
             info "Termux Properties Found" "Editing With Sed"
             sed -i "s/^# allow-external-apps =.*/allow-external-apps = true/" "$HOME/.termux/termux.properties" || error "Failed To Edit Allow External Apps"
-            sed -i "s/^# terminal-cursor-blink-rate =.*/terminal-cursor-blink-rate = 750/" "$HOME/.termux/termux.properties" || error "Failed To Edit Cursor Blink Rate"
+            sed -i "s/^# terminal-cursor-blink-rate =.*/terminal-cursor-blink-rate = 850/" "$HOME/.termux/termux.properties" || error "Failed To Edit Cursor Blink Rate"
             sed -i "s/^# terminal-cursor-style =.*/terminal-cursor-style = block/" "$HOME/.termux/termux.properties" || error "Failed To Edit Cursor Style"
             sed -i "s/^# default-working-directory =.*/default-working-directory = $ENV\/scripts/" "$HOME/.termux/termux.properties" || error "Failed To Edit Working Directory"
             sed -i "s/^# shortcut.create-session =.*/shortcut.create-session = ctrl + t/" "$HOME/.termux/termux.properties" || error "Failed To Edit Session Shortcut"
@@ -636,7 +637,7 @@ BashRC () {
             mkdir -p "$HOME/.termux" || error "Failed To Create Termux Directory"
             echo -n > "$HOME/.termux/termux.properties" || error "Failed To Create Termux Properties"
             echo "allow-external-apps = true" >> "$HOME/.termux/termux.properties" || error "Failed To Set Allow External Apps"
-            echo "terminal-cursor-blink-rate = 750" >> "$HOME/.termux/termux.properties" || error "Failed To Set Cursor Blink Rate"
+            echo "terminal-cursor-blink-rate = 850" >> "$HOME/.termux/termux.properties" || error "Failed To Set Cursor Blink Rate"
             echo "terminal-cursor-style = block" >> "$HOME/.termux/termux.properties" || error "Failed To Set Cursor Style"
             echo "bell-character = vibrate" >> "$HOME/.termux/termux.properties" || error "Failed To Set Bell Character"
             echo "default-working-directory = $ENV/scripts" >> "$HOME/.termux/termux.properties" || error "Failed To Set Working Directory"
@@ -681,9 +682,50 @@ BashRC () {
     fi
 }
 
-# <!-- [SS-7]: Setting CodeServer ----->
+# <!-- [SS-7]: Proot Distro ----->
+Distro () {
+    # /7.1/ Install Distro
+    if ! cache Distro-Ubuntu; then
+        info "Installing Ubuntu Distro"
+        proot-distro install ubuntu || error "Failed to Install Ubuntu"
+        ok "Installed Ubuntu Distro"
+        setcache Distro-Ubuntu
+    fi
+
+    # /7.2/ Local Bin
+    if ! cache Distro-Bin; then
+        info "Creating Ubuntu Local Bin Directory"
+        mkdir -p "$UBIN" || error "Failed To Create Ubuntu Local Bin Directory"
+        ok "Created Ubuntu Local Directory"
+        cp "$SRC/install.sh" "$UBIN/install.sh" || error "Failed to Copy Install Script to Ubuntu"
+        okay "Copied Install.sh to Ubuntu"
+        chmod +x "$UBIN/install.sh" || error "Failed to chmod +x Install Script in Ubuntu"
+        setcache Distro-Bin
+    fi
+
+    # /7.3/ Home Directory
+    if ! cache Distro-Home ;then
+        info "Copying Source Files to Ubuntu"
+        cp -r $SRC/app/* "$UBHOME" || error "Failed to Copy Source Files to Ubuntu"
+        ok "Source Files Copied"
+        setcache Distro-Home
+    fi
+
+    # /7.4/ Projects Directory
+    if ! cache Distro-Projects; then
+        info "Creating Projects Directory in Ubuntu"
+        if [ ! -d "$UBHOME/projects" ]; then
+            mkdir -p "$UBHOME/Projects/.vscode" || error "Failed To Create Projects Directory in Ubuntu"
+            ok "Created Projects Directory in Ubuntu"
+        fi
+        setcache Distro-Projects
+    fi
+}
+
+
+# <!-- [SS-8]: Setting CodeServer ----->
 CodeServer () {
-    # /7.1/ CodeServer Configs
+    # /8.1/ CodeServer Configs
     if ! cache Code-Set; then
         info "Setting Up CodeServer Configuration"
         if [ ! -d "$HOME/.config/code-server" ]; then
@@ -693,7 +735,7 @@ CodeServer () {
         if [ ! -f "$HOME/.config/code-server/config.yaml" ]; then
             info "Creating CodeServer Config File"
             cat > "$HOME/.config/code-server/config.yaml" << EOF || error "Failed To Create CodeServer Config"
-bind-addr: 127.0.0.1:5000
+bind-addr: 128.0.0.1:5000
 auth: none
 cert: false
 EOF
@@ -703,7 +745,7 @@ EOF
         ok "CodeServer Configuration Complete"
     fi
 
-    # /7.2/ CodeServer Install
+    # /8.2/ CodeServer Install
     if ! cache Code-Inst; then
         info "Installing CodeServer"
         if [ ! -f "$BIN/install.sh" ]; then
@@ -717,7 +759,7 @@ EOF
         ok "CodeServer Installed Successfully"
     fi
 
-    # /7.3/ CodeServer Check
+    # /8.3/ CodeServer Check
     if ! cache Code-Check; then
         info "Verifying CodeServer Installation"
         if command -v code-server >/dev/null 2>&1; then

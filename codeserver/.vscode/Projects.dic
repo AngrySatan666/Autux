@@ -1,0 +1,23 @@
+# Projects Dictionary
+
+[Developers]
+    [UserNames]
+        AngrySatan
+        AngrySatan666
+        CreeCrush
+
+    [Organizations]
+        Integrated-Developments
+        AdrenaBlu
+
+[Python]
+    [Modules]
+        coreutils
+
+    [Variables]
+        _dir
+        unarchived
+        $UBHOME
+        UBHOME
+        $UBIN
+        $BRC
